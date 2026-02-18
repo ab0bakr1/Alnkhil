@@ -1,0 +1,124 @@
+@model alnakhil.Models.ApplicationUser
+
+@{
+    ViewData["Title"] = "تفاصيل الحساب";
+}
+
+<div class="container-fluid px-0 px-md-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">طاقم العمل</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">تفاصيل الحساب</li>
+                </ol>
+            </nav>
+            <h3 class="fw-bold text-dark">📄 مراجعة بيانات الموظف</h3>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary px-4 rounded-3 shadow-sm">
+                <i class="bi bi-pencil-square me-1"></i> تعديل البيانات
+            </a>
+            <a asp-action="Index" class="btn btn-light px-3 rounded-3 border">
+                <i class="bi bi-arrow-left"></i> رجوع
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4 h-100">
+                <div class="position-relative d-inline-block mx-auto mb-3">
+                    <img src="https://ui-avatars.com/api/?name=@Model.FullName&size=128&background=00b894&color=fff" 
+                         class="rounded-circle shadow-sm border border-4 border-white" width="120" alt="Avatar">
+                    <span class="position-absolute bottom-0 start-0 p-2 bg-success border border-2 border-white rounded-circle shadow-sm" title="حساب نشط"></span>
+                </div>
+                <h4 class="fw-bold text-dark mb-1">@Model.FullName</h4>
+                <p class="text-muted small mb-3">@Model.Email</p>
+                
+                <div class="d-flex justify-content-center gap-2 mb-2">
+                    @foreach (var role in ViewBag.Roles)
+                    {
+                        <span class="badge @(role == "Admin" ? "bg-danger" : "bg-primary") px-3 py-2 rounded-pill">
+                            <i class="bi @(role == "Admin" ? "bi-shield-check" : "bi-person-badge") me-1"></i> 
+                            @(role == "Admin" ? "مدير نظام" : "كاشير")
+                        </span>
+                    }
+                </div>
+                <hr class="my-4 opacity-25">
+                <div class="text-start">
+                    <h6 class="fw-bold text-muted small text-uppercase mb-3">معلومات التواصل</h6>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-telephone text-primary me-3 fs-5"></i>
+                        <span class="text-dark fw-medium">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "لا يوجد رقم هاتف" : Model.PhoneNumber)</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-envelope text-primary me-3 fs-5"></i>
+                        <span class="text-dark fw-medium">@Model.Email</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white py-3 border-0">
+                    <h6 class="fw-bold mb-0 text-dark">📊 نظرة عامة على النشاط</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6 col-md-4">
+                            <div class="p-3 border rounded-3 bg-light text-center">
+                                <small class="text-muted d-block mb-1">تاريخ الانضمام</small>
+                                <span class="fw-bold text-dark">@DateTime.Now.ToString("yyyy/MM/dd")</span> 
+                                @* استبدل التاريخ أعلاه بمتغير تاريخ الانضمام إذا كان متوفراً *@
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <div class="p-3 border rounded-3 bg-light text-center">
+                                <small class="text-muted d-block mb-1">آخر تسجيل دخول</small>
+                                <span class="fw-bold text-dark">اليوم</span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="p-3 border rounded-3 bg-light text-center">
+                                <small class="text-muted d-block mb-1">إجمالي المبيعات المنجزة</small>
+                                <span class="fw-bold text-success">0 فاتورة</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-4 rounded-4 border border-dashed text-center">
+                        <i class="bi bi-info-square text-muted fs-1 mb-2 d-block opacity-25"></i>
+                        <p class="text-muted mb-0">سجل نشاطات هذا المستخدم سيظهر هنا (الفواتير، المشتريات، التعديلات).</p>
+                    </div>
+                </div>
+                <div class="card-footer bg-white py-3 border-0 text-center">
+                    <small class="text-muted">نظام النخيل الذكي - وحدة إدارة الموارد البشرية</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "←";
+        color: #ced4da;
+    }
+    
+    .border-dashed {
+        border-style: dashed !important;
+        border-width: 2px !important;
+        background-color: #fafafa;
+    }
+
+    .badge {
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    .card {
+        transition: transform 0.2s;
+    }
+</style>

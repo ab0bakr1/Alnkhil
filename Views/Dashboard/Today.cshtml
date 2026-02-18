@@ -1,0 +1,211 @@
+@model alnakhil.ViewModels.TodayStatsVM
+
+@{
+    ViewData["Title"] = "إحصائيات اليوم";
+}
+
+<div class="container-fluid py-4 px-md-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 bg-white p-3 rounded-4 shadow-sm border-start border-success border-5">
+        <div>
+            <h3 class="fw-bold text-dark mb-1"><i class="bi bi-calendar-check me-2 text-success"></i> تقرير النشاط اليومي</h3>
+            <p class="text-muted small mb-0">متابعة الأداء اللحظي ليوم @DateTime.Today.ToString("dd MMMM yyyy")</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-outline-dark btn-sm rounded-pill px-3">
+                <i class="bi bi-printer me-1"></i> طباعة الجرد اليومي
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-2">
+                <div class="card-body">
+                    <div class="rounded-circle bg-success bg-opacity-10 p-3 d-inline-flex mb-3 text-success">
+                        <i class="bi bi-receipt fs-3"></i>
+                    </div>
+                    <h6 class="text-muted small fw-bold">إجمالي المبيعات</h6>
+                    <h3 class="fw-bold text-success mb-0">@Model.TotalSales.ToString("N0") <small class="fs-6">RY</small></h3>
+                    <span class="badge bg-light text-dark mt-2 border">@Model.SalesCount فاتورة</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-2">
+                <div class="card-body">
+                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-inline-flex mb-3 text-primary">
+                        <i class="bi bi-cart-plus fs-3"></i>
+                    </div>
+                    <h6 class="text-muted small fw-bold">إجمالي المشتريات</h6>
+                    <h3 class="fw-bold text-primary mb-0">@Model.TotalPurchases.ToString("N0") <small class="fs-6">RY</small></h3>
+                    <span class="badge bg-light text-dark mt-2 border">@Model.PurchasesCount فاتورة</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-2 bg-warning bg-opacity-10 border border-warning border-opacity-25">
+                <div class="card-body">
+                    <div class="rounded-circle bg-warning p-3 d-inline-flex mb-3 text-white shadow-sm">
+                        <i class="bi bi-graph-up-arrow fs-3"></i>
+                    </div>
+                    <h6 class="text-muted small fw-bold">الأرباح المحققة</h6>
+                    <h3 class="fw-bold text-dark mb-0">@Model.Profit.ToString("N0") <small class="fs-6">RY</small></h3>
+                    <div class="small text-warning fw-bold mt-2">صافي الربح اليومي</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-2">
+                <div class="card-body">
+                    <div class="rounded-circle bg-danger bg-opacity-10 p-3 d-inline-flex mb-3 text-danger">
+                        <i class="bi bi-cash-stack fs-3"></i>
+                    </div>
+                    <h6 class="text-muted small fw-bold">ديون جديدة</h6>
+                    <h3 class="fw-bold text-danger mb-0">@Model.NewDebts.ToString("N0") <small class="fs-6">RY</small></h3>
+                    <span class="text-muted small d-block mt-2">مبيعات آجلة اليوم</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i> حركة المبيعات حسب الساعة</h6>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div style="height: 300px;">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-light">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-4">مقارنة الأداء (أمس vs اليوم)</h6>
+                    
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small text-muted">مبيعات اليوم</span>
+                            <span class="fw-bold text-success">@Model.TotalSales.ToString("N0")</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small text-muted">مبيعات أمس</span>
+                            <span class="fw-bold text-secondary">@Model.YesterdaySales.ToString("N0")</span>
+                        </div>
+                        @{ 
+                            var yesPercent = Model.TotalSales > 0 ? (Model.YesterdaySales / Model.TotalSales) * 100m : 0m;
+                        } 
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-secondary" role="progressbar" style="width: @(yesPercent)%"></div>
+                        </div>
+                    </div>
+
+                    <div class="text-center py-3 rounded-4 bg-white border shadow-xs">
+                        <h6 class="small text-muted mb-1">فارق الأداء</h6>
+                        <h2 class="fw-bold mb-0 @(Model.Difference >= 0 ? "text-success" : "text-danger")">
+                            <i class="bi @(Model.Difference >= 0 ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
+                            @Math.Abs(Model.Difference).ToString("N0")
+                        </h2>
+                        <small class="text-muted">ريال يمني</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-trophy me-2 text-warning"></i> الأكثر مبيعاً اليوم</h6>
+                    <span class="badge bg-primary rounded-pill">أفضل 5</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0 table-hover">
+                        <thead class="bg-light small">
+                            <tr>
+                                <th class="ps-4">المنتج</th>
+                                <th class="text-center">الكمية</th>
+                                <th class="pe-4 text-end">إجمالي القيمة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in Model.TopProducts)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold text-dark">@p.ProductName</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border px-3">@p.Quantity</span>
+                                    </td>
+                                    <td class="pe-4 text-end fw-bold text-primary">@p.Total.ToString("N0") RY</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-success text-white h-100">
+                <div class="card-body p-4 d-flex flex-column justify-content-center text-center">
+                    <i class="bi bi-cash-coin fs-1 mb-3 opacity-50"></i>
+                    <h6 class="fw-bold opacity-75">إجمالي السيولة النقدية المحصلة</h6>
+                    <h1 class="fw-bold mb-1">@Model.CollectedToday.ToString("N0")</h1>
+                    <p class="small mb-0 opacity-75">هذا المبلغ يجب أن يتوفر في الصندوق (الكاش) الآن.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .shadow-xs { box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .bg-light { background-color: #f8f9fa !important; }
+    .progress { background-color: #e9ecef; border-radius: 10px; overflow: hidden; }
+</style>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('salesChart');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: @Html.Raw(Json.Serialize(Model.Hours)),
+            datasets: [{
+                label: 'حجم المبيعات',
+                data: @Html.Raw(Json.Serialize(Model.HourlySales)),
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.05)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#0d6efd',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 10 } } },
+                x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+            }
+        }
+    });
+</script>
+}

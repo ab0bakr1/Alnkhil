@@ -1,0 +1,149 @@
+@model alnakhil.ViewModels.ProductVM
+@{
+    ViewData["Title"] = "تعديل المنتج - " + Model.Name;
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded-4 shadow-sm border-end border-warning border-5">
+        <div>
+            <h3 class="fw-bold text-dark mb-1"><i class="bi bi-pencil-square me-2 text-warning"></i> تعديل بيانات المنتج</h3>
+            <p class="text-muted small mb-0">تحديث الأسعار، الكميات، أو تاريخ صلاحية الصنف.</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-right me-1"></i> العودة للمخزن
+        </a>
+    </div>
+
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="Id" />
+        
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0"><i class="bi bi-info-circle me-2 text-primary"></i> المعلومات الأساسية</h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <div asp-validation-summary="All" class="alert alert-danger border-0 small d-none" id="valSummary"></div>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label asp-for="Name" class="form-label small fw-bold">اسم المنتج</label>
+                                <input asp-for="Name" class="form-control border-light bg-light" placeholder="مثلاً: حليب نيدو 1 كجم" />
+                                <span asp-validation-for="Name" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Barcode" class="form-label small fw-bold">الباركود</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i class="bi bi-barcode"></i></span>
+                                    <input asp-for="Barcode" class="form-control border-light bg-light" />
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="CategoryId" class="form-label small fw-bold">التصنيف</label>
+                                <select asp-for="CategoryId" class="form-select border-light bg-light" asp-items="@(new SelectList(ViewBag.Categories, "Id", "Name"))">
+                                    <option value="">-- اختر التصنيف --</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="ExpirationDate" class="form-label small fw-bold">تاريخ الانتهاء</label>
+                                <input asp-for="ExpirationDate" type="date" class="form-control border-light bg-light" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0"><i class="bi bi-archive me-2 text-primary"></i> المخزون</h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label asp-for="Quantity" class="form-label small fw-bold">الكمية المتوفرة حالياً</label>
+                                <div class="input-group">
+                                    <input asp-for="Quantity" class="form-control border-light bg-light text-center fw-bold fs-5" />
+                                    <span class="input-group-text bg-light border-0">وحدة</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4">
+                        <h6 class="fw-bold mb-0"><i class="bi bi-currency-dollar me-2 text-success"></i> إعدادات الأسعار</h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-4 p-3 bg-light rounded-3 border-start border-primary border-3">
+                            <label asp-for="PurchasePrice" class="form-label small fw-bold text-muted">سعر الشراء الحالي</label>
+                            <h4 class="fw-bold mb-1">@Model.PurchasePrice.ToString("N2") <small class="fs-6">RY</small></h4>
+                            <input type="hidden" asp-for="PurchasePrice" />
+                            <small class="text-muted" style="font-size: 0.7rem;">يتم تحديثه آلياً من فواتير الشراء</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="SalePrice" class="form-label small fw-bold">سعر البيع الافتراضي</label>
+                            <div class="input-group">
+                                <input asp-for="SalePrice" class="form-control border-light bg-light fw-bold text-primary" readonly />
+                                <span class="input-group-text bg-light border-0">RY</span>
+                            </div>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input asp-for="IsManualPrice" class="form-check-input" type="checkbox" id="flexSwitchManual">
+                            <label class="form-check-label fw-bold small" for="flexSwitchManual text-dark">تفعيل السعر اليدوي</label>
+                        </div>
+
+                        <div id="manualPriceSection" class="mb-4 @(Model.IsManualPrice ? "" : "opacity-50")">
+                            <label asp-for="ManualSalePrice" class="form-label small fw-bold">سعر البيع المخصص</label>
+                            <div class="input-group">
+                                <input asp-for="ManualSalePrice" class="form-control border-warning bg-light fw-bold" placeholder="0.00" />
+                                <span class="input-group-text bg-warning border-0 text-white">RY</span>
+                            </div>
+                            <small class="text-info" style="font-size: 0.7rem;">عند التفعيل، سيتم تجاهل نسبة الربح التلقائية.</small>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-5">
+                            <button type="submit" class="btn btn-primary py-3 fw-bold rounded-3 shadow-sm">
+                                <i class="bi bi-save me-2"></i> حفظ التعديلات
+                            </button>
+                            <a asp-action="Index" class="btn btn-light py-2 text-muted">إلغاء</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .bg-light { background-color: #f8f9fa !important; }
+    .form-control:focus, .form-select:focus { 
+        background-color: #fff !important; 
+        border-color: #0d6efd !important; 
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.05) !important; 
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // تحسين بسيط للتفاعل مع السعر اليدوي
+        document.getElementById('flexSwitchManual').addEventListener('change', function() {
+            const section = document.getElementById('manualPriceSection');
+            const input = document.querySelector('input[name="ManualSalePrice"]');
+            if(this.checked) {
+                section.classList.remove('opacity-50');
+                input.removeAttribute('readonly');
+                input.focus();
+            } else {
+                section.classList.add('opacity-50');
+                input.setAttribute('readonly', 'readonly');
+            }
+        });
+    </script>
+}

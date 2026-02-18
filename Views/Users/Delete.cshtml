@@ -1,0 +1,80 @@
+@model alnakhil.Models.ApplicationUser
+
+@{
+    ViewData["Title"] = "تأكيد حذف المستخدم";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center mt-md-5">
+        <div class="col-12 col-md-8 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-danger bg-opacity-10 border-0 py-4 text-center">
+                    <div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 70px; height: 70px;">
+                        <i class="bi bi-exclamation-triangle fs-1"></i>
+                    </div>
+                    <h4 class="fw-bold text-danger mb-0">تأكيد الحذف النهائي</h4>
+                </div>
+                
+                <div class="card-body p-4 p-md-5 text-center">
+                    <p class="text-muted mb-4">
+                        أنت على وشك حذف حساب المستخدم التالي من النظام. 
+                        <span class="d-block fw-bold text-dark mt-2 fs-5">@Model.FullName</span>
+                        <span class="text-primary small">@Model.Email</span>
+                    </p>
+
+                    <div class="alert alert-warning border-0 rounded-3 text-start mb-4">
+                        <div class="d-flex gap-3">
+                            <i class="bi bi-info-circle-fill fs-4 text-warning"></i>
+                            <div>
+                                <small class="d-block fw-bold text-warning-emphasis">ماذا سيحدث؟</small>
+                                <small class="text-dark">لن يتمكن الموظف من تسجيل الدخول، ولكن السجلات التاريخية للفواتير التي أنشأها ستظل محفوظة باسمه للتدقيق.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger py-3 fw-bold rounded-3 shadow-sm">
+                                <i class="bi bi-trash3 me-2"></i> نعم، قم بحذف الحساب
+                            </button>
+                            <a asp-action="Index" class="btn btn-light py-2 border-0 text-muted">
+                                تراجع عن الحذف
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="card-footer bg-light border-0 py-3 text-center">
+                    <small class="text-muted">نظام النخيل Smart POS - الأمان والرقابة</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* أنيميشن بسيط لجذب الانتباه للتحذير */
+    .bi-exclamation-triangle {
+        animation: pulse-danger 2s infinite;
+    }
+
+    @@keyframes pulse-danger {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    .btn-danger {
+        background-color: #eb4d4b;
+        border: none;
+        transition: all 0.3s;
+    }
+
+    .btn-danger:hover {
+        background-color: #ff5252;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(235, 77, 75, 0.4) !important;
+    }
+</style>

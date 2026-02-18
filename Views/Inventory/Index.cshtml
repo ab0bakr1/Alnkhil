@@ -1,0 +1,113 @@
+@model IEnumerable<alnakhil.Models.InventoryTransaction>
+
+@{
+    ViewData["Title"] = "سجل حركة المخزون";
+}
+
+<div class="container-fluid py-4 px-md-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 bg-white p-3 rounded-4 shadow-sm border-start border-secondary border-5">
+        <div>
+            <h3 class="fw-bold text-dark mb-1"><i class="bi bi-arrow-left-right me-2 text-secondary"></i> حركة المخزون التفصيلية</h3>
+            <p class="text-muted small mb-0">تتبع دقيق لعمليات (البيع، الشراء، والتسويات) لكل صنف.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-outline-dark btn-sm rounded-pill px-3">
+                <i class="bi bi-printer me-1"></i> طباعة التقرير
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-bottom border-success border-3">
+                <div class="small text-muted mb-1">إجمالي الوارد (شراء)</div>
+                <h4 class="fw-bold mb-0 text-success">
+                    + @Model.Where(t => t.Type == alnakhil.Models.InventoryTransactionType.Purchase).Sum(t => t.QuantityChanged)
+                </h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-bottom border-danger border-3">
+                <div class="small text-muted mb-1">إجمالي الصادر (بيع)</div>
+                <h4 class="fw-bold mb-0 text-danger">
+                    @Model.Where(t => t.Type == alnakhil.Models.InventoryTransactionType.Sale).Sum(t => t.QuantityChanged)
+                </h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white border-bottom border-primary border-3">
+                <div class="small text-muted mb-1">عمليات التسوية</div>
+                <h4 class="fw-bold mb-0 text-primary">
+                    @Model.Count(t => t.Type == alnakhil.Models.InventoryTransactionType.Adjustment)
+                </h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted small">
+                    <tr>
+                        <th class="ps-4 py-3">المنتج</th>
+                        <th class="text-center">نوع الحركة</th>
+                        <th class="text-center">قبل</th>
+                        <th class="text-center">الكمية المتأثرة</th>
+                        <th class="text-center">بعد</th>
+                        <th class="text-center">التاريخ والوقت</th>
+                        <th class="pe-4">ملاحظات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        var typeClass = item.Type == alnakhil.Models.InventoryTransactionType.Purchase ? "bg-success" :
+                                        item.Type == alnakhil.Models.InventoryTransactionType.Sale ? "bg-danger" : "bg-primary";
+                                        
+                        var typeText = item.Type == alnakhil.Models.InventoryTransactionType.Purchase ? "وارد - شراء" :
+                                       item.Type == alnakhil.Models.InventoryTransactionType.Sale ? "صادر - بيع" : "تعديل مخزني";
+                                       
+                        var icon = item.Type == alnakhil.Models.InventoryTransactionType.Purchase ? "bi-plus-circle" :
+                                   item.Type == alnakhil.Models.InventoryTransactionType.Sale ? "bi-dash-circle" : "bi-gear";
+
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold text-dark">@item.Product.Name</div>
+                                <div class="text-muted" style="font-size: 11px;">#@item.ProductId</div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge @typeClass bg-opacity-10 @typeClass.Replace("bg-", "text-") border @typeClass.Replace("bg-", "border-") px-3 rounded-pill small">
+                                    <i class="bi @icon me-1"></i> @typeText
+                                </span>
+                            </td>
+                            <td class="text-center text-muted">@item.QuantityBefore</td>
+                            <td class="text-center fw-bold">
+                                <span class="@(item.QuantityChanged > 0 ? "text-success" : "text-danger")">
+                                    @(item.QuantityChanged > 0 ? "+" : "")@item.QuantityChanged
+                                </span>
+                            </td>
+                            <td class="text-center fw-bold bg-light">@item.QuantityAfter</td>
+                            <td class="text-center">
+                                <div class="small">@item.Date.ToString("yyyy-MM-dd")</div>
+                                <div class="text-muted" style="font-size: 11px;">@item.Date.ToString("HH:mm")</div>
+                            </td>
+                            <td class="pe-4">
+                                <span class="small text-muted italic">@(string.IsNullOrEmpty(item.Note) ? "---" : item.Note)</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-light { background-color: #f8f9fa !important; }
+    .table tbody tr:hover { background-color: #fcfcfc; }
+    .badge { font-weight: 500; font-size: 0.75rem; }
+    @@media print {
+        .btn, .shadow-sm, .border-start { display: none !important; }
+        .card { border: 1px solid #ddd !important; }
+    }
+</style>

@@ -1,0 +1,303 @@
+@model alnakhil.ViewModels.PurchaseVM
+@{
+    ViewData["Title"] = "إنشاء فاتورة شراء";
+}
+
+<div class="container-fluid py-4 px-md-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 bg-white p-3 rounded-4 shadow-sm border-start border-success border-5">
+        <div>
+            <h3 class="fw-bold text-dark mb-1"><i class="bi bi-bag-plus me-2 text-success"></i> فاتورة شراء جديدة</h3>
+            <p class="text-muted small mb-0">تسجيل بضاعة واردة للمخزن وتحديث بيانات الموردين.</p>
+        </div>
+        <div asp-validation-summary="All" class="text-danger small fw-bold"></div>
+    </div>
+
+    <form asp-action="Create" method="post" id="purchaseForm">
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">رقم الفاتورة</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-hash"></i></span>
+                            <input asp-for="InvoiceNumber" class="form-control border-light bg-light fw-bold" readonly />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">اسم المورد</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-truck"></i></span>
+                            <input asp-for="SupplierName" class="form-control border-light bg-light" placeholder="أدخل اسم المورد" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">تاريخ الشراء</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-calendar-event"></i></span>
+                            <input asp-for="PurchaseDate" type="date" class="form-control border-light bg-light" readonly />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">حالة الفاتورة</label>
+                        <select asp-for="PaymentStatus" class="form-select form-select-sm border-light bg-light fw-bold">
+                            <option value="Paid">✅ مدفوعة</option>
+                            <option value="Unpaid">❌ غير مدفوعة</option>
+                            <option value="Deferred">⚠️ آجل</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-box-seam me-2"></i> الأصناف الموردة</h6>
+                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="addRow()">
+                    <i class="bi bi-plus-lg me-1"></i> إضافة صنف جديد
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="bg-light">
+                        <tr class="small text-muted text-uppercase">
+                            <th style="width: 25%;" class="ps-4">المنتج / البحث</th>
+                            <th style="width: 15%;">الباركود</th>
+                            <th style="width: 10%;" class="text-center">الكمية</th>
+                            <th style="width: 15%;">التصنيف</th>
+                            <th style="width: 15%;">تاريخ الانتهاء</th>
+                            <th style="width: 15%;">سعر الشراء</th>
+                            <th style="width: 5%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3 small">الضرائب والخصومات</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">الضريبة (%)</label>
+                                <div class="input-group input-group-sm">
+                                    <input asp-for="TaxPercentage" class="form-control border-light bg-light" oninput="calculateTotal()" />
+                                    <span class="input-group-text bg-light border-0">%</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted">الخصم (%)</label>
+                                <div class="input-group input-group-sm">
+                                    <input asp-for="DiscountPercentage" class="form-control border-light bg-light" oninput="calculateTotal()" />
+                                    <span class="input-group-text bg-light border-0 text-danger">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 bg-primary text-white h-100">
+                    <div class="card-body p-4 d-flex flex-column justify-content-center text-center">
+                        <span class="opacity-75 small text-uppercase fw-bold mb-2">إجمالي مبلغ الفاتورة</span>
+                        <h2 class="fw-bold mb-3" id="totalAmount">0.00 <small style="font-size: 14px">RY</small></h2>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-light fw-bold py-2 shadow-sm">
+                                <i class="bi bi-cloud-check me-2"></i> حفظ الفاتورة
+                            </button>
+                            <a asp-controller="Products" asp-action="Index" class="btn btn-outline-light btn-sm border-0 opacity-75">إلغاء</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" asp-for="Subtotal" id="Subtotal" />
+        <input type="hidden" asp-for="TaxAmount" id="TaxAmount" />
+        <input type="hidden" asp-for="DiscountAmount" id="DiscountAmount" />
+        <input type="hidden" asp-for="TotalAmount" id="TotalAmount" />
+    </form>
+</div>
+
+<style>
+    .bg-light { background-color: #f8f9fa !important; }
+    .form-control:focus, .form-select:focus { box-shadow: none; border-color: #0d6efd !important; }
+    
+    .suggestions {
+        z-index: 1050;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        border: none;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .list-group-item-action:hover { background-color: #f0f7ff; color: #0d6efd; }
+    
+    .table thead th { font-weight: 600; padding: 12px 8px; }
+    .table tbody td { padding: 12px 8px; }
+</style>
+
+@section Scripts {
+
+    <script>
+    let itemIndex = 0;
+
+    document.addEventListener("DOMContentLoaded", () => addRow());
+
+    function addRow() {
+        const row = `
+    <tr>
+        <td style="position:relative">
+            <!-- اسم المنتج -->
+            <input name="Items[${itemIndex}].ProductName"
+                type="text"
+                class="form-control product-search"
+                placeholder="اسم المنتج أو البحث بالباركود" />
+
+            <!-- ProductId (nullable) -->
+            <input type="hidden"
+                name="Items[${itemIndex}].ProductId"
+                class="product-id" />
+
+            <div class="list-group position-absolute w-100 d-none suggestions"></div>
+        </td>
+        <td>
+            <input name="Items[${itemIndex}].Barcode"
+                type="text"
+                class="form-control"
+                placeholder="اختياري" />
+        </td>
+
+        <td>
+            <input name="Items[${itemIndex}].Quantity"
+                type="number"
+                class="form-control"
+                min="1"
+                value="1"
+                oninput="calculateTotal()" />
+        </td>
+
+        <td>
+            <input name="Items[${itemIndex}].CategoryName"
+                type="text"
+                class="form-control"
+                placeholder="اختياري" />
+        </td>
+
+        <td>
+            <input name="Items[${itemIndex}].ExpiryDate"
+                type="date"
+                class="form-control" />
+        </td>
+
+        <td>
+            <input name="Items[${itemIndex}].PurchasePrice"
+                type="number"
+                class="form-control"
+                step="0.01"
+                oninput="calculateTotal()" />
+        </td>
+
+        <td>
+            <button type="button"
+                    class="btn btn-danger"
+                    onclick="removeRow(this)">✖</button>
+        </td>
+    </tr>`;
+        document.getElementById("itemsBody").insertAdjacentHTML("beforeend", row);
+        itemIndex++;
+    }
+
+    function removeRow(btn) {
+        btn.closest("tr").remove();
+        calculateTotal();
+    }
+
+
+    function calculateTotal() {
+        let subtotal = 0;
+
+        document.querySelectorAll("#itemsBody tr").forEach(row => {
+            const price = parseFloat(row.querySelector('input[name$=".PurchasePrice"]').value) || 0;
+            subtotal += price; // سعر الكرتون كامل
+        });
+
+        const taxPerc = parseFloat(document.getElementById("TaxPercentage").value) || 0;
+        const discountPerc = parseFloat(document.getElementById("DiscountPercentage").value) || 0;
+
+        const taxAmount = subtotal * taxPerc / 100;
+        const discountAmount = subtotal * discountPerc / 100;
+
+        const total = subtotal + taxAmount - discountAmount;
+
+        // 👇 ربط مع ViewModel
+        document.getElementById("Subtotal").value = subtotal;
+        document.getElementById("TaxAmount").value = taxAmount;
+        document.getElementById("DiscountAmount").value = discountAmount;
+        document.getElementById("TotalAmount").value = total;
+
+        document.getElementById("totalAmount").textContent =
+            total.toLocaleString('ar-EG', { style: 'currency', currency: 'SAR' });
+    }
+
+
+    // البحث عن المنتجات
+        document.addEventListener("input", function (e) {
+            if (!e.target.classList.contains("product-search")) return;
+
+            const input = e.target;
+            const cell = input.closest("td");
+            const list = cell.querySelector(".suggestions");
+            const hidden = cell.querySelector(".product-id");
+
+            hidden.value = ""; // منتج جديد افتراضيًا
+
+            if (input.value.length < 2) {
+                list.classList.add("d-none");
+                return;
+            }
+
+            fetch(`/Purchases/Search?q=${encodeURIComponent(input.value)}`)
+                .then(r => r.json())
+                .then(data => {
+                    list.innerHTML = "";
+                    list.classList.remove("d-none");
+
+                    data.forEach(p => {
+                        const btn = document.createElement("button");
+                        btn.type = "button";
+                        btn.className = "list-group-item list-group-item-action";
+                        btn.textContent = `${p.name} (${p.barcode})`;
+                        btn.onclick = () => {
+                            input.value = p.name;
+                            hidden.value = p.id;
+
+                            const row = input.closest("tr");
+
+                            // 👇 تعبئة تلقائية
+                            row.querySelector('input[name$=".Barcode"]').value = p.barcode ?? "";
+                            row.querySelector('input[name$=".PurchasePrice"]').value = p.purchasePrice ?? 0;
+                            row.querySelector('input[name$=".CategoryName"]').value = p.category ?? "";
+
+                            list.classList.add("d-none");
+                            calculateTotal();
+                        };
+                        list.appendChild(btn);
+                    });
+                });
+        });
+        document.querySelector("form").addEventListener("submit", function (e) {
+            let valid = true;
+
+            if (!valid) {
+                alert("⚠️ اختر المنتج من القائمة");
+                e.preventDefault();
+            }
+        });
+
+</script>
+}
+ 

@@ -1,0 +1,157 @@
+@model alnakhil.Models.Sale
+
+@{
+    ViewData["Title"] = $"فاتورة #{Model.InvoiceNumber}";
+    var totalAmount = Model.Subtotal + Model.TaxAmount - Model.DiscountAmount;
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 d-print-none">
+        <div>
+            <a asp-action="Index" class="text-decoration-none text-muted small">
+                <i class="bi bi-arrow-right me-1"></i> العودة للسجل
+            </a>
+            <h3 class="fw-bold text-dark mt-2">📄 تفاصيل الفاتورة</h3>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-primary-pos px-4 shadow-sm">
+                <i class="bi bi-printer me-2"></i> طباعة الفاتورة
+            </button>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-light border px-4">
+                <i class="bi bi-pencil me-2"></i> تعديل
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden invoice-print-area">
+        <div class="card-header bg-white border-0 p-4 p-md-5">
+            <div class="row align-items-center">
+                <div class="col-sm-6 text-center text-sm-start mb-4 mb-sm-0">
+                    <h2 class="fw-bold text-primary mb-1">النخيل Smart</h2>
+                    <p class="text-muted small mb-0">للتجارة العامة والتجزئة</p>
+                    <p class="text-muted small">هاتف: 777-xxx-xxx | اليمن</p>
+                </div>
+                <div class="col-sm-6 text-center text-sm-end">
+                    <h4 class="text-uppercase fw-bold text-dark mb-1">فاتورة مبيعات</h4>
+                    <div class="text-muted small">رقم الفاتورة: <span class="fw-bold text-dark">#@Model.InvoiceNumber</span></div>
+                    <div class="text-muted small">التاريخ: <span class="fw-bold text-dark">@Model.SaleDate.ToString("yyyy/MM/dd HH:mm")</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-4 p-md-5 pt-0">
+            <hr class="my-4 opacity-25">
+
+            <div class="row mb-5">
+                <div class="col-sm-6 mb-3 mb-sm-0">
+                    <h6 class="text-muted fw-bold small text-uppercase mb-3">مُصدرة إلى:</h6>
+                    <h5 class="fw-bold text-dark mb-1">@(string.IsNullOrEmpty(Model.CustomerName) ? "عميل نقدي" : Model.CustomerName)</h5>
+                    @if (Model.PaymentStatus == alnakhil.Models.PaymentStatus.Deferred)
+                    {
+                        <p class="text-danger small mb-0"><i class="bi bi-calendar-event me-1"></i> تاريخ الاستحقاق: @(Model.DueDate?.ToString("yyyy/MM/dd") ?? "غير محدد")</p>
+                    }
+                </div>
+                <div class="col-sm-6 text-sm-end">
+                    <h6 class="text-muted fw-bold small text-uppercase mb-3">حالة الدفع:</h6>
+                    @switch (Model.PaymentStatus)
+                    {
+                        case alnakhil.Models.PaymentStatus.Paid:
+                            <span class="badge bg-success-subtle text-success px-4 py-2 rounded-pill fs-6">
+                                <i class="bi bi-check-circle-fill me-1"></i> مدفوع بالكامل
+                            </span>
+                            break;
+                        case alnakhil.Models.PaymentStatus.Deferred:
+                            <span class="badge bg-danger-subtle text-danger px-4 py-2 rounded-pill fs-6">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i> آجل (دين)
+                            </span>
+                            break;
+                        default:
+                            <span class="badge bg-warning-subtle text-warning px-4 py-2 rounded-pill fs-6">
+                                <i class="bi bi-clock-fill me-1"></i> بانتظار الدفع
+                            </span>
+                            break;
+                    }
+                </div>
+            </div>
+
+            <div class="table-responsive mb-5">
+                <table class="table table-hover align-middle">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="border-0 ps-3">المنتج</th>
+                            <th class="border-0 text-center">الكمية</th>
+                            <th class="border-0 text-end">سعر الوحدة</th>
+                            <th class="border-0 text-end pe-3">المجموع</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td class="ps-3">
+                                    <div class="fw-bold text-dark">@item.Product?.Name</div>
+                                </td>
+                                <td class="text-center">@item.Quantity</td>
+                                <td class="text-end text-muted">@item.UnitPrice.ToString("N0") <small>RY</small></td>
+                                <td class="text-end fw-bold pe-3">@((item.Quantity * item.UnitPrice).ToString("N0")) <small>RY</small></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row justify-content-end">
+                <div class="col-md-5 col-lg-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">المجموع الفرعي:</span>
+                        <span class="fw-bold text-dark">@Model.Subtotal.ToString("N0") <small>RY</small></span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">الضريبة (15%):</span>
+                        <span class="fw-bold text-dark">@Model.TaxAmount.ToString("N0") <small>RY</small></span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3 text-danger">
+                        <span>إجمالي الخصم:</span>
+                        <span class="fw-bold">- @Model.DiscountAmount.ToString("N0") <small>RY</small></span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0">المبلغ الإجمالي:</h5>
+                        <h4 class="fw-bold text-primary mb-0">@totalAmount.ToString("N0") <small>RY</small></h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer bg-light border-0 p-4 text-center">
+            <p class="text-muted small mb-0">شكرًا لتعاملكم مع النخيل Smart. يرجى الاحتفاظ بهذه الفاتورة.</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ألوان مخصصة للحالات */
+    .bg-success-subtle { background-color: #dcfce7 !important; }
+    .bg-danger-subtle { background-color: #fee2e2 !important; }
+    .bg-warning-subtle { background-color: #fef9c3 !important; }
+
+    /* تنسيق الطباعة */
+    @@media print {
+        body { background: white !important; }
+        .d-print-none { display: none !important; }
+        .invoice-print-area { 
+            box-shadow: none !important; 
+            border: 1px solid #eee !important;
+            border-radius: 0 !important;
+        }
+        .card { border: none !important; }
+        .container { max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+    }
+
+    .btn-primary-pos {
+        background-color: #00b894;
+        color: white;
+        border: none;
+        border-radius: 10px;
+    }
+</style>

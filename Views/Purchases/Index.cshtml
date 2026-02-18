@@ -1,0 +1,135 @@
+@model IEnumerable<alnakhil.Models.Purchase>
+
+@{
+    ViewData["Title"] = "إدارة المشتريات";
+}
+
+<div class="container-fluid px-0 px-md-2">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">📦 سجل فواتير المشتريات</h3>
+            <p class="text-muted small mb-0">تتبع مشترياتك من الموردين وتكاليف المخزون.</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary px-4 py-2 shadow-sm rounded-3">
+            <i class="bi bi-plus-circle-fill me-2"></i> إضافة شراء جديد
+        </a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 bg-white border-start border-primary border-4">
+                <small class="text-muted d-block">إجمالي الفواتير</small>
+                <h4 class="fw-bold mb-0">@Model?.Count()</h4>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 bg-white border-start border-danger border-4">
+                <small class="text-muted d-block">ديون الموردين</small>
+                <h4 class="fw-bold mb-0 text-danger">
+                    @Model?.Where(p => p.PaymentStatus == 0).Sum(p => p.TotalAmount).ToString("N0") <small style="font-size: 10px;">RY</small>
+                </h4>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 bg-white border-start border-success border-4">
+                <small class="text-muted d-block">مشتريات مسددة</small>
+                <h4 class="fw-bold mb-0 text-success">
+                    @Model?.Where(p => p.PaymentStatus != 0).Sum(p => p.TotalAmount).ToString("N0") <small style="font-size: 10px;">RY</small>
+                </h4>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+        </div>
+    }
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 py-3 border-0 text-muted small">رقم الفاتورة</th>
+                        <th class="border-0 text-muted small">المورد</th>
+                        <th class="border-0 text-muted small">تاريخ الشراء</th>
+                        <th class="border-0 text-muted small text-center">الحالة</th>
+                        <th class="border-0 text-muted small">المبلغ الكلي</th>
+                        <th class="pe-4 border-0 text-muted small text-end">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var purchase in Model)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="fw-bold text-dark">#@purchase.InvoiceNumber</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-light p-2 me-2 text-primary" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="bi bi-truck small"></i>
+                                        </div>
+                                        <span class="text-dark small fw-medium">@purchase.SupplierName</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-muted small">@purchase.PurchaseDate.ToString("yyyy-MM-dd")</span>
+                                </td>
+                                <td class="text-center">
+                                    @if (purchase.PaymentStatus == 0)
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger px-3 rounded-pill">دين</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success-subtle text-success px-3 rounded-pill">مدفوع</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-dark">@purchase.TotalAmount.ToString("N0")</span> <small class="text-muted" style="font-size: 10px;">RY</small>
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <a asp-action="Details" asp-route-id="@purchase.Id" class="btn btn-light btn-sm rounded-3 shadow-xs" title="تفاصيل">
+                                            <i class="bi bi-eye text-info"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@purchase.Id" class="btn btn-light btn-sm rounded-3 shadow-xs" title="تعديل">
+                                            <i class="bi bi-pencil-square text-warning"></i>
+                                        </a>
+                                        <form asp-action="Delete" asp-route-id="@purchase.Id" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-light btn-sm rounded-3 shadow-xs" 
+                                                    onclick="return confirm('هل أنت متأكد من حذف هذا الشراء؟ سيتم تعديل كميات المخزون بناءً على ذلك.')">
+                                                <i class="bi bi-trash3 text-danger"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-cart-x d-block fs-1 opacity-25 mb-2"></i>
+                                لا توجد فواتير مشتريات مسجلة حالياً.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div> 
+
+<style>
+    .bg-success-subtle { background-color: #dcfce7 !important; }
+    .bg-danger-subtle { background-color: #fee2e2 !important; }
+    .shadow-xs { box-shadow: 0 2px 4px rgba(0,0,0,0.02); border: 1px solid #eee; }
+    .table tbody tr:hover { background-color: #f8f9fa; transition: 0.2s; }
+</style>

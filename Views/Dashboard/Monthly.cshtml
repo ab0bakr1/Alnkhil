@@ -1,0 +1,176 @@
+@model alnakhil.ViewModels.MonthlyStatsVM
+
+@{
+    ViewData["Title"] = "التقرير الشهري";
+}
+
+<div class="container-fluid py-4 px-md-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 bg-white p-3 rounded-4 shadow-sm border-start border-primary border-5">
+        <div>
+            <h3 class="fw-bold text-dark mb-1"><i class="bi bi-bar-chart-line me-2 text-primary"></i> التحليل المالي الشهري</h3>
+            <p class="text-muted small mb-0">تقرير أداء شهر: <span class="badge bg-primary">@ViewBag.Month</span></p>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle rounded-pill px-3" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-filter me-1"></i> تغيير الشهر
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">الشهر الحالي</a></li>
+                <li><a class="dropdown-item" href="#">الشهر السابق</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                <div class="card-body p-4 border-bottom border-4 @(Model.MonthlyProfit >= 0 ? "border-success" : "border-danger")">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h6 class="text-muted small fw-bold text-uppercase">صافي الربح الشهري</h6>
+                        <i class="bi bi-wallet2 fs-4 @(Model.MonthlyProfit >= 0 ? "text-success" : "text-danger")"></i>
+                    </div>
+                    <h2 class="fw-bold @(Model.MonthlyProfit >= 0 ? "text-success" : "text-danger") mb-1">
+                        @Model.MonthlyProfit.ToString("N0") <small class="fs-6">RY</small>
+                    </h2>
+                    <p class="text-muted small mb-0 mt-2">بعد احتساب (المبيعات - المشتريات)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                <div class="card-body p-4 border-bottom border-warning border-4">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h6 class="text-muted small fw-bold text-uppercase">ديون معلقة (لنا)</h6>
+                        <i class="bi bi-arrow-down-right-circle fs-4 text-warning"></i>
+                    </div>
+                    <h2 class="fw-bold text-dark mb-1">
+                        @Model.SalesDebts.ToString("N0") <small class="fs-6">RY</small>
+                    </h2>
+                    <p class="text-muted small mb-0 mt-2">إجمالي المبالغ التي لم تُحصل من العملاء هذا الشهر</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-light">
+                <div class="card-body p-4">
+                    <h6 class="text-muted small fw-bold mb-3">مقارنة مبيعات الشهرين</h6>
+                    <div class="d-flex align-items-end justify-content-between mb-2">
+                        <div>
+                            <span class="d-block small text-muted">فارق القيمة</span>
+                            <h4 class="fw-bold mb-0 @(Model.Difference >= 0 ? "text-success" : "text-danger")">
+                                @(Model.Difference >= 0 ? "▲" : "▼") @Math.Abs(Model.Difference).ToString("N0")
+                            </h4>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge @(Model.Difference >= 0 ? "bg-success" : "bg-danger") rounded-pill">
+                                @((Model.LastMonthSales > 0 ? ((double)Model.Difference / (double)Model.LastMonthSales * 100) : 0).ToString("N1"))%                            
+                            </span>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-primary" style="width: 70%"></div>
+                        <div class="progress-bar bg-secondary opacity-50" style="width: 30%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-white py-3 border-0">
+            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-graph-up me-2 text-primary"></i> منحنى المبيعات اليومية خلال الشهر</h6>
+        </div>
+        <div class="card-body px-4 pb-4">
+            <div style="height: 350px;">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white py-3 border-0">
+            <h6 class="fw-bold mb-0"><i class="bi bi-stars me-2 text-warning"></i> الأصناف الأكثر رواجاً هذا الشهر</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0 table-hover">
+                <thead class="bg-light small text-muted">
+                    <tr>
+                        <th class="ps-4">اسم المنتج</th>
+                        <th class="text-center">الكمية المباعة</th>
+                        <th class="text-center">إجمالي الدخل</th>
+                        <th class="pe-4 text-center">الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.TopProducts)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <span class="fw-bold text-dark">@p.ProductName</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-primary border border-primary border-opacity-25 px-3 rounded-pill">
+                                    @p.Quantity وحدة
+                                </span>
+                            </td>
+                            <td class="text-center fw-bold text-dark">@p.Total.ToString("N0") <small class="text-muted">RY</small></td>
+                            <td class="pe-4 text-center">
+                                <i class="bi bi-graph-up-arrow text-success"></i>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-light { background-color: #f8f9fa !important; }
+    .table tbody tr:hover { background-color: #f1f8ff !important; transition: 0.2s; }
+</style>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('monthlyChart');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: @Html.Raw(Json.Serialize(Model.Days)),
+            datasets: [{
+                label: 'حجم المبيعات اليومي',
+                data: @Html.Raw(Json.Serialize(Model.DailySales)),
+                backgroundColor: 'rgba(13, 110, 253, 0.7)',
+                hoverBackgroundColor: '#0d6efd',
+                borderRadius: 5,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { 
+                    backgroundColor: '#1e293b',
+                    padding: 12,
+                    titleFont: { size: 14 },
+                    bodyFont: { size: 13 },
+                    displayColors: false
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true, 
+                    grid: { color: '#f0f0f0', drawBorder: false },
+                    ticks: { callback: function(value) { return value.toLocaleString() + ' RY'; } }
+                },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+</script>
+}

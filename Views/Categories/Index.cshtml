@@ -1,0 +1,89 @@
+@model IEnumerable<alnakhil.Models.Category>
+
+@{
+    ViewData["Title"] = "إدارة التصنيفات";
+}
+
+<div class="container-fluid py-4 px-md-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 bg-white p-3 rounded-4 shadow-sm border-start border-primary border-5">
+        <div>
+            <h3 class="fw-bold text-dark mb-1"><i class="bi bi-folder2-open me-2 text-primary"></i> تنظيم الأقسام</h3>
+            <p class="text-muted small mb-0">قم بتنظيم منتجاتك في مجموعات لتسهيل عملية البحث والبيع.</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow-sm">
+            <i class="bi bi-plus-lg me-1"></i> إضافة تصنيف جديد
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr class="small text-muted text-uppercase">
+                                <th class="ps-4 py-3">اسم التصنيف</th>
+                                <th class="text-center">عدد المنتجات</th>
+                                <th class="pe-4 text-end">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-3 bg-primary bg-opacity-10 p-2 me-3 text-primary">
+                                                <i class="bi bi-tag-fill"></i>
+                                            </div>
+                                            <span class="fw-bold text-dark">@item.Name</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        @* نفترض وجود علاقة Products في الموديل *@
+                                        <span class="badge rounded-pill bg-light text-dark border px-3">
+                                            @(item.Products?.Count() ?? 0) صنف
+                                        </span>
+                                    </td>
+                                    <td class="pe-4 text-end">
+                                        <div class="btn-group shadow-xs">
+                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary border-0" title="تعديل">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger border-0" title="حذف">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-primary text-white p-2">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-lightbulb me-2"></i> نصيحة تنظيمية</h5>
+                    <p class="small opacity-75">
+                        استخدم أسماء تصنيفات واضحة وشاملة (مثال: "معلبات" بدلاً من "تونا"). هذا يساعد في استخراج تقارير المبيعات الشهرية لكل قسم بدقة أعلى.
+                    </p>
+                    <hr class="opacity-25">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="small">إجمالي التصنيفات:</span>
+                        <span class="fw-bold fs-4">@Model.Count()</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-light { background-color: #f8f9fa !important; }
+    .table tbody tr:hover { background-color: #fcfcfc; transition: 0.3s; }
+    .shadow-xs { box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .btn-group .btn:hover { background-color: #f8f9fa; }
+</style>

@@ -1,0 +1,105 @@
+@model alnakhil.Models.ApplicationUser
+
+@{
+    ViewData["Title"] = "تعديل بيانات المستخدم";
+}
+
+<div class="container-fluid">
+    <div class="mb-4">
+        <a asp-action="Index" class="text-decoration-none text-muted small mb-2 d-inline-block">
+            <i class="bi bi-arrow-right me-1"></i> العودة لقائمة المستخدمين
+        </a>
+        <h3 class="fw-bold text-dark">⚙️ تعديل حساب: <span class="text-primary">@Model.FullName</span></h3>
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 p-md-5">
+                    <form method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-secondary">الاسم الكامل للموظف</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-person text-primary"></i></span>
+                                <input name="fullName" class="form-control bg-light border-0 py-2" 
+                                       placeholder="أدخل الاسم الثلاثي" value="@Model.FullName" required />
+                            </div>
+                            <small class="text-muted mt-1 d-block">يظهر هذا الاسم في الفواتير والتقارير.</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-secondary">البريد الإلكتروني (اسم المستخدم)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-envelope text-muted"></i></span>
+                                <input class="form-control bg-light border-0 py-2" value="@Model.Email" readonly disabled />
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label fw-bold text-secondary">صلاحيات النظام (الدور)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-shield-lock text-warning"></i></span>
+                                <select name="role" class="form-select bg-light border-0 py-2">
+                                    @foreach (var role in ViewBag.Roles)
+                                    {
+                                        <option value="@role.Name" selected="@(role.Name == ViewBag.CurrentRole ? "selected" : null)">
+                                            @(role.Name == "Admin" ? "مدير نظام (صلاحيات كاملة)" : "كاشير (صلاحيات محدودة)")
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="mt-2 p-2 bg-warning-subtle rounded-3 small text-warning-emphasis">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                تغيير الصلاحية يؤثر على ميزات الوصول لهذا المستخدم فوراً.
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary-pos px-5 py-2 shadow-sm flex-grow-1">
+                                <i class="bi bi-check-lg me-2"></i> حفظ التغييرات
+                            </button>
+                            <a asp-action="Index" class="btn btn-light px-4 py-2 border flex-grow-1">إلغاء</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-4 mt-4 mt-lg-0">
+            <div class="card border-0 bg-primary bg-opacity-10 rounded-4 p-4 h-100">
+                <h5 class="fw-bold text-primary"><i class="bi bi-info-circle me-2"></i> تعليمات التعديل</h5>
+                <ul class="text-secondary small mt-3 lh-lg">
+                    <li>تأكد من صحة <strong>الاسم الكامل</strong> لأنه سيظهر للعملاء في فاتورة البيع.</li>
+                    <li>لا يمكن تغيير <strong>البريد الإلكتروني</strong> بعد إنشاء الحساب لدواعي أمنية.</li>
+                    <li>عند منح رتبة <strong>مدير نظام</strong>، سيتمكن الموظف من رؤية تقارير الأرباح وتعديل المخزون.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus, .form-select:focus {
+        background-color: #fff !important;
+        border: 1px solid var(--primary-color) !important;
+        box-shadow: 0 0 0 0.25rem rgba(0, 184, 148, 0.1);
+    }
+
+    .btn-primary-pos {
+        background-color: #00b894;
+        color: white;
+        border: none;
+        font-weight: 600;
+    }
+
+    .btn-primary-pos:hover {
+        background-color: #00a383;
+        color: white;
+    }
+
+    .bg-warning-subtle {
+        background-color: #fff3cd !important;
+    }
+</style> 

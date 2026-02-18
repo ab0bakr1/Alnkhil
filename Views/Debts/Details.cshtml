@@ -1,0 +1,145 @@
+@model alnakhil.ViewModels.DebtDetailsVM
+
+@{
+    ViewData["Title"] = "تفاصيل الحساب - " + Model.Name;
+    var isPayable = Model.Type == alnakhil.ViewModels.DebtType.Payable;
+    var totalPaidRatio = Model.TotalAmount > 0 ? (Model.TotalPaid / Model.TotalAmount) * 100 : 0;
+}
+
+<div class="container-fluid py-4 px-md-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">إدارة الديون</a></li>
+                    <li class="breadcrumb-item active">كشف الحساب</li>
+                </ol>
+            </nav>
+            <h3 class="fw-bold text-dark mb-0">
+                <i class="bi bi-person-badge me-2 text-primary"></i> @Model.Name
+                <span class="badge rounded-pill fs-6 fw-normal ms-2 @(isPayable ? "bg-danger bg-opacity-10 text-danger border border-danger" : "bg-success bg-opacity-10 text-success border border-success")">
+                    @(isPayable ? "🔴 مورد (علينا)" : "🟢 عميل (لنا)")
+                </span>
+            </h3>
+        </div>
+        <button onclick="window.print()" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-printer me-1"></i> طباعة كشف الحساب
+        </button>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-body p-4 border-start border-primary border-5">
+                    <h6 class="text-muted small fw-bold text-uppercase">إجمالي الفواتير</h6>
+                    <h3 class="fw-bold mb-0">@Model.TotalAmount.ToString("N2") <small class="fs-6">RY</small></h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-body p-4 border-start border-success border-5">
+                    <h6 class="text-muted small fw-bold text-uppercase">إجمالي المسدد</h6>
+                    <h3 class="fw-bold text-success mb-0">@Model.TotalPaid.ToString("N2") <small class="fs-6 text-muted">RY</small></h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-body p-4 border-start border-danger border-5">
+                    <h6 class="text-muted small fw-bold text-uppercase">المتبقي المطلوب</h6>
+                    <h3 class="fw-bold text-danger mb-0">@Model.TotalRemaining.ToString("N2") <small class="fs-6 text-muted">RY</small></h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white p-3">
+        <div class="d-flex justify-content-between mb-2 small">
+            <span class="fw-bold text-dark">حالة التسديد الإجمالية</span>
+            <span class="fw-bold text-primary">@totalPaidRatio.ToString("N0")%</span>
+        </div>
+        <div class="progress" style="height: 10px; border-radius: 5px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated @(isPayable ? "bg-danger" : "bg-success")" 
+                 role="progressbar" style="width: @totalPaidRatio%"></div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <div class="card-header bg-white py-3 border-0">
+            <h6 class="fw-bold mb-0"><i class="bi bi-card-list me-2"></i> تفاصيل الفواتير الآجلة</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="bg-light text-muted small">
+                    <tr>
+                        <th class="ps-4">رقم الفاتورة</th>
+                        <th>تاريخ الفاتورة</th>
+                        <th>تاريخ الاستحقاق</th>
+                        <th>المبلغ الإجمالي</th>
+                        <th>المدفوع</th>
+                        <th class="text-danger">المتبقي</th>
+                        <th class="pe-4" style="width: 250px;">إجراء سداد</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model.Invoices)
+                    {
+                        var isLate = d.DueDate.HasValue && d.DueDate < DateTime.Now && d.RemainingAmount > 0;
+                        <tr>
+                            <td class="ps-4 fw-bold">#@d.InvoiceNumber</td>
+                            <td>@d.InvoiceDate.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                @if (d.DueDate.HasValue)
+                                {
+                                    <span class="@(isLate ? "text-danger fw-bold" : "")">@d.DueDate.Value.ToString("yyyy-MM-dd")</span>
+                                    @if(isLate){ <i class="bi bi-exclamation-circle text-danger ms-1" title="متأخر"></i> }
+                                }
+                                else { <span class="text-muted">-</span> }
+                            </td>
+                            <td>@d.TotalAmount.ToString("N2")</td>
+                            <td class="text-success">@d.AmountPaid.ToString("N2")</td>
+                            <td class="fw-bold text-danger">@d.RemainingAmount.ToString("N2")</td>
+                            <td class="pe-4">
+                                @if (d.RemainingAmount > 0)
+                                {
+                                    <form asp-action="Pay" method="post" class="d-flex gap-1">
+                                        <input type="hidden" name="Id" value="@d.Id" />
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" name="Amount" class="form-control border-success" 
+                                                   placeholder="المبلغ" min="1" max="@d.RemainingAmount" required />
+                                            <button class="btn btn-success" type="submit">
+                                                <i class="bi bi-cash-stack"></i> سداد
+                                            </button>
+                                        </div>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 rounded-pill">
+                                        <i class="bi bi-check-circle me-1"></i> مكتمل
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <a asp-action="Index" class="btn btn-link text-decoration-none p-0 text-secondary">
+        <i class="bi bi-arrow-right me-1"></i> العودة لقائمة الديون العامة
+    </a>
+</div>
+
+<style>
+    .bg-light { background-color: #f8f9fa !important; }
+    .table tbody tr:hover { background-color: #fcfcfc; }
+    .progress-bar { transition: width 0.6s ease; }
+    @@media print {
+        .btn, form, nav, .progress { display: none !important; }
+        .card { border: 1px solid #eee !important; box-shadow: none !important; }
+        .container-fluid { width: 100%; padding: 0 !important; }
+    }
+</style>

@@ -1,0 +1,155 @@
+@model alnakhil.Models.Purchase
+
+@{
+    ViewData["Title"] = $"تفاصيل فاتورة شراء #{Model.InvoiceNumber}";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 d-print-none">
+        <div>
+            <a asp-action="Index" class="text-decoration-none text-muted small">
+                <i class="bi bi-arrow-right me-1"></i> العودة لسجل المشتريات
+            </a>
+            <h3 class="fw-bold text-dark mt-2">📦 تفاصيل فاتورة الشراء</h3>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-dark px-4 shadow-sm">
+                <i class="bi bi-printer me-2"></i> طباعة الوثيقة
+            </button>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-success px-4 shadow-sm">
+                <i class="bi bi-pencil-square me-2"></i> تعديل الفاتورة
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden invoice-print-area">
+        <div class="card-header bg-dark p-4 p-md-5">
+            <div class="row align-items-center">
+                <div class="col-sm-6 text-center text-sm-start mb-4 mb-sm-0 text-white">
+                    <h2 class="fw-bold mb-1">النخيل Smart</h2>
+                    <p class="opacity-75 small mb-0">نظام إدارة المخازن والمبيعات</p>
+                    <div class="mt-2 small opacity-50">تاريخ الطباعة: @DateTime.Now.ToString("yyyy/MM/dd")</div>
+                </div>
+                <div class="col-sm-6 text-center text-sm-end text-white">
+                    <h4 class="text-uppercase fw-bold mb-1">فاتورة توريد مخزني</h4>
+                    <div class="opacity-75 small">رقم الفاتورة: <span class="fw-bold text-success">#@Model.InvoiceNumber</span></div>
+                    <div class="opacity-75 small">تاريخ التوريد: @Model.PurchaseDate.ToString("yyyy/MM/dd HH:mm")</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-4 p-md-5 pt-4">
+            <div class="row mb-5 g-4">
+                <div class="col-sm-6">
+                    <div class="p-3 bg-light rounded-4 h-100">
+                        <h6 class="text-muted fw-bold small text-uppercase mb-3 border-bottom pb-2">بيانات المورد:</h6>
+                        <h5 class="fw-bold text-dark mb-1"><i class="bi bi-truck me-2"></i> @Model.SupplierName</h5>
+                        <p class="text-muted small mb-0">مرجع المورد: @Model.InvoiceNumber</p>
+                    </div>
+                </div>
+                <div class="col-sm-6 text-sm-end">
+                    <div class="p-3 bg-light rounded-4 h-100">
+                        <h6 class="text-muted fw-bold small text-uppercase mb-3 border-bottom pb-2">حالة التسديد:</h6>
+                        @switch (Model.PaymentStatus)
+                        {
+                            case alnakhil.Models.PaymentStatus.Paid:
+                                <div class="h5 fw-bold text-success mb-1 text-uppercase">مدفوعة بالكامل</div>
+                                <span class="badge bg-success px-3 rounded-pill">تسديد نقدي</span>
+                                break;
+                            case alnakhil.Models.PaymentStatus.Deferred:
+                                <div class="h5 fw-bold text-danger mb-1 text-uppercase">مستحقة (آجل)</div>
+                                <div class="text-danger small fw-bold">تاريخ الاستحقاق: @(Model.DueDate?.ToString("yyyy/MM/dd") ?? "غير محدد")</div>
+                                break;
+                            default:
+                                <div class="h5 fw-bold text-warning mb-1 text-uppercase">قيد المراجعة</div>
+                                break;
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive mb-5">
+                <table class="table table-hover align-middle">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="border-0 ps-3">الصنف الوارد</th>
+                            <th class="border-0 text-center">الكمية</th>
+                            <th class="border-0 text-end">سعر الشراء</th>
+                            <th class="border-0 text-end pe-3">الإجمالي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td class="ps-3 py-3">
+                                    <div class="fw-bold text-dark">@item.Product?.Name</div>
+                                    <small class="text-muted">ID: @item.Product?.Barcode</small>
+                                </td>
+                                <td class="text-center fw-bold">@item.Quantity</td>
+                                <td class="text-end text-muted">@item.PurchasePrice.ToString("N2") <small>RY</small></td>
+                                <td class="text-end fw-bold pe-3">@((item.Quantity * item.PurchasePrice).ToString("N2")) <small>RY</small></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row justify-content-end">
+                <div class="col-md-5">
+                    <div class="p-4 bg-light rounded-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">المجموع الفرعي:</span>
+                            <span class="fw-bold text-dark">@Model.Subtotal.ToString("N2") <small>RY</small></span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">الضرائب المضافة:</span>
+                            <span class="fw-bold text-dark">+ @Model.TaxAmount.ToString("N2") <small>RY</small></span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3 text-danger">
+                            <span class="small">خصم مكتسب:</span>
+                            <span class="fw-bold">- @Model.DiscountAmount.ToString("N2") <small>RY</small></span>
+                        </div>
+                        <hr class="my-3 opacity-25">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold mb-0">إجمالي الفاتورة:</h5>
+                            <h4 class="fw-bold text-dark mb-0">@Model.TotalAmount.ToString("N2") <small>RY</small></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer bg-white border-top-0 p-4">
+            <div class="row align-items-center">
+                <div class="col-md-6 small text-muted">
+                    <p class="mb-1 fw-bold">ملاحظات التوريد:</p>
+                    تم مراجعة هذه البضاعة وتطابقها مع الكميات المطلوبة في المستودع.
+                </div>
+                <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                    <div class="d-inline-block text-center border-top px-4 pt-2">
+                        <small class="d-block text-muted">توقيع مسؤول المخزن</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* تنسيقات خاصة للطباعة */
+    @@media print {
+        body { background: white !important; direction: rtl; }
+        .d-print-none, .btn, .main-footer { display: none !important; }
+        .invoice-print-area { box-shadow: none !important; border: 1px solid #000 !important; }
+        .card-header { background-color: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; }
+        .bg-light { background-color: #f8f9fa !important; -webkit-print-color-adjust: exact; }
+        .container { max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+    }
+
+    .invoice-print-area {
+        background-color: #fff;
+    }
+    
+    .shadow-sm { box-shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important; }
+</style>

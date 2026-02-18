@@ -1,0 +1,152 @@
+@model alnakhil.ViewModels.CreateCashierVM
+
+@{
+    ViewData["Title"] = "إضافة كاشير جديد";
+}
+
+<div class="container-fluid">
+    <div class="mb-4">
+        <a asp-action="Index" class="text-decoration-none text-muted small mb-2 d-inline-block">
+            <i class="bi bi-arrow-right me-1"></i> العودة لقائمة الطاقم
+        </a>
+        <h3 class="fw-bold text-dark">✨ إضافة عضو جديد للطاقم</h3>
+        <p class="text-muted small">قم بتعبئة البيانات التالية لإنشاء حساب كاشير جديد ومنحه صلاحيات الوصول.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 p-md-5">
+                    <form asp-action="Create" method="post">
+                        
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger border-0 rounded-3 mb-4 py-2">
+                                <i class="bi bi-exclamation-circle-fill me-2"></i>
+                                <span class="small">يرجى تصحيح الأخطاء أدناه للمتابعة.</span>
+                                <div asp-validation-summary="All" class="small mt-1 ms-4"></div>
+                            </div>
+                        }
+
+                        <div class="row g-3">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label fw-600 text-secondary">الاسم الكامل</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i class="bi bi-person-badge text-primary"></i></span>
+                                    <input asp-for="FullName" class="form-control bg-light border-0 py-2" placeholder="مثال: محمد أحمد علي" />
+                                </div>
+                                <span asp-validation-for="FullName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-600 text-secondary">البريد الإلكتروني (اسم المستخدم)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i class="bi bi-envelope-at text-primary"></i></span>
+                                    <input asp-for="Email" class="form-control bg-light border-0 py-2" placeholder="name@nakhil.com" />
+                                </div>
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-600 text-secondary">رقم الهاتف</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i class="bi bi-phone text-primary"></i></span>
+                                    <input asp-for="Phone" class="form-control bg-light border-0 py-2" placeholder="05xxxxxxxx" />
+                                </div>
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-12 mb-4">
+                                <label class="form-label fw-600 text-secondary">كلمة المرور</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i class="bi bi-lock text-primary"></i></span>
+                                    <input asp-for="Password" type="password" class="form-control bg-light border-0 py-2" placeholder="••••••••" />
+                                    <button class="btn btn-light border-0" type="button" id="togglePassword">
+                                        <i class="bi bi-eye text-muted"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text mt-1 small text-muted">
+                                    يجب أن تحتوي على 6 أحرف على الأقل، تشمل أرقاماً ورموزاً.
+                                </div>
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <hr class="my-4 opacity-25">
+
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="submit" class="btn btn-primary-pos px-5 py-2 shadow-sm flex-grow-1 flex-md-grow-0">
+                                <i class="bi bi-person-plus me-2"></i> إنشاء الحساب
+                            </button>
+                            <a asp-action="Index" class="btn btn-light px-4 py-2 border flex-grow-1 flex-md-grow-0">
+                                إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-4 mt-4 mt-lg-0">
+            <div class="card border-0 bg-success bg-opacity-10 rounded-4 p-4 mb-3">
+                <h6 class="fw-bold text-success mb-3"><i class="bi bi-lightbulb me-2"></i> نصيحة أمنية</h6>
+                <p class="small text-secondary mb-0">
+                    كلمة المرور القوية تساهم في حماية مبيعاتك. ننصح بتغيير كلمة المرور بشكل دوري لكل كاشير لضمان أقصى درجات الأمان.
+                </p>
+            </div>
+            
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-shield-check me-2"></i> الصلاحيات الافتراضية</h6>
+                <ul class="small text-muted ps-3 mb-0">
+                    <li class="mb-2">إصدار فواتير البيع للعملاء.</li>
+                    <li class="mb-2">البحث عن المنتجات في المخزون.</li>
+                    <li class="mb-2">تسجيل ديون العملاء الجديدة.</li>
+                    <li class="text-danger">لا يمكنه حذف الفواتير أو تعديل الأسعار.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .fw-600 { font-weight: 600; }
+    
+    .input-group:focus-within .input-group-text {
+        background-color: #fff !important;
+        border: 1px solid var(--primary-color) !important;
+        border-left: none !important;
+    }
+    
+    .input-group:focus-within .form-control {
+        background-color: #fff !important;
+        border: 1px solid var(--primary-color) !important;
+        border-right: none !important;
+    }
+
+    .btn-primary-pos {
+        background-color: #00b894;
+        color: white;
+        border: none;
+        transition: 0.3s;
+    }
+
+    .btn-primary-pos:hover {
+        background-color: #00a383;
+        transform: translateY(-2px);
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // ميزة إظهار وإخفاء كلمة المرور
+        const togglePassword = document.querySelector('#togglePassword');
+        const passwordInput = document.querySelector('input[type="password"]');
+
+        togglePassword.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('bi-eye');
+            this.querySelector('i').classList.toggle('bi-eye-slash');
+        });
+    </script>
+}

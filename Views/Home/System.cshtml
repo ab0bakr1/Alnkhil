@@ -1,0 +1,126 @@
+@{
+    ViewData["Title"] = "لوحة التحكم المركزية";
+}
+
+<div class="container-fluid py-4 px-md-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold text-dark">⚙️ بوابة الإدارة والنظام</h2>
+        <p class="text-muted">مرحباً بك في مركز التحكم بنظام النخيل، يمكنك الوصول السريع لكافة أقسام النظام من هنا.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden pt-2 border-top border-success border-5">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3 text-success"><i class="bi bi-cart-check me-2"></i> قسم المبيعات</h5>
+                    <div class="list-group list-group-flush">
+                        <a asp-controller="Sales" asp-action="Index" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between">
+                            <span>📊 سجل المبيعات</span> <i class="bi bi-chevron-left small opacity-50"></i>
+                        </a>
+                        <a asp-controller="Sales" asp-action="Create" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between">
+                            <span>➕ فاتورة مبيعات جديدة</span> <i class="bi bi-chevron-left small opacity-50"></i>
+                        </a>
+                        <a asp-controller="TodayStats" asp-action="Index" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between">
+                            <span>📈 إحصائيات اليوم</span> <i class="bi bi-chevron-left small opacity-50"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden pt-2 border-top border-primary border-5">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3 text-primary"><i class="bi bi-bag-plus me-2"></i> المشتريات والموردين</h5>
+                    <div class="list-group list-group-flush">
+                        <a asp-controller="Purchases" asp-action="Index" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between">
+                            <span>📄 سجل فواتير الشراء</span> <i class="bi bi-chevron-left small opacity-50"></i>
+                        </a>
+                        <a asp-controller="Purchases" asp-action="Create" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between">
+                            <span>🚚 إضافة طلبية جديدة</span> <i class="bi bi-chevron-left small opacity-50"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden pt-2 border-top border-warning border-5">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3 text-warning"><i class="bi bi-box-seam me-2"></i> إدارة المخزن</h5>
+                    <div class="list-group list-group-flush">
+                        <a asp-controller="Products" asp-action="Index" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between">
+                            <span>📦 قائمة المنتجات</span> <i class="bi bi-chevron-left small opacity-50"></i>
+                        </a>
+                        <a asp-controller="Inventory" asp-action="Index" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between">
+                            <span>📉 جرد المخزون</span> <i class="bi bi-chevron-left small opacity-50"></i>
+                        </a>
+                        <a asp-controller="Pricing" asp-action="Index" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between">
+                            <span>🏷️ إدارة التسعير</span> <i class="bi bi-chevron-left small opacity-50"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden pt-2 border-top border-danger border-5">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3 text-danger"><i class="bi bi-bank me-2"></i> الإدارة المالية</h5>
+                    <div class="list-group list-group-flush">
+                        <a asp-controller="Debts" asp-action="Index" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between">
+                            <span>💳 إدارة الديون</span> <i class="bi bi-chevron-left small opacity-50"></i>
+                        </a>
+                        <a asp-controller="MonthlyStats" asp-action="Index" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between">
+                            <span>📅 التقارير الشهرية</span> <i class="bi bi-chevron-left small opacity-50"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden pt-2 border-top border-dark border-5">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-sliders me-2"></i> إعدادات النظام</h5>
+                    <div class="list-group list-group-flush">
+                        <a asp-controller="Categories" asp-action="Index" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between">
+                            <span>📂 إدارة التصنيفات</span> <i class="bi bi-chevron-left small opacity-50"></i>
+                        </a>
+                        <a asp-controller="Users" asp-action="Index" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between">
+                            <span>👥 الموظفين والصلاحيات</span> <i class="bi bi-chevron-left small opacity-50"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden pt-2 border-top border-info border-5">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3 text-info"><i class="bi bi-graph-up-arrow me-2"></i> الرؤية التحليلية</h5>
+                    <div class="list-group list-group-flush">
+                        <a asp-controller="Dashboard" asp-action="Index" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between">
+                            <span>🚀 لوحة الإحصائيات العامة</span> <i class="bi bi-chevron-left small opacity-50"></i>
+                        </a>
+                        <a asp-controller="Home" asp-action="Index" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between">
+                            <span>🏠 الصفحة الرئيسية</span> <i class="bi bi-chevron-left small opacity-50"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mt-5 pt-4 text-center border-top border-light">
+        <p class="text-muted small">نظام النخيل المتكامل - الإصدار 3.0</p>
+    </div>
+</div>
+
+<style>
+    .list-group-item { transition: all 0.3s ease; font-size: 0.95rem; color: #495057; }
+    .list-group-item:hover { background-color: transparent !important; color: #0d6efd !important; padding-right: 10px !important; }
+    .card { transition: transform 0.3s ease; }
+    .card:hover { transform: translateY(-5px); }
+</style> 

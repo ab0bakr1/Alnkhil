@@ -1,0 +1,276 @@
+@model alnakhil.ViewModels.PurchaseVM
+
+@{
+    ViewData["Title"] = "تعديل فاتورة شراء";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded-4 shadow-sm border-end border-warning border-5">
+        <div>
+            <h3 class="fw-bold text-dark mb-1"><i class="bi bi-pencil-square me-2 text-warning"></i> تعديل فاتورة شراء</h3>
+            <p class="text-muted small mb-0">تعديل بيانات الفاتورة الواردة من المورد وتحديث الكميات.</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-right me-1"></i> العودة للقائمة
+        </a>
+    </div>
+
+    <form asp-action="Edit" method="post">
+        @Html.AntiForgeryToken()
+        
+        <div class="row g-4">
+            <div class="col-lg-12">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label asp-for="SupplierName" class="form-label fw-bold small">اسم المورد *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i class="bi bi-truck text-muted"></i></span>
+                                    <input asp-for="SupplierName" class="form-control border-light bg-light" placeholder="أدخل اسم المورد" required />
+                                </div>
+                                <span asp-validation-for="SupplierName" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="PaymentStatus" class="form-label fw-bold small">حالة الدفع</label>
+                                <select asp-for="PaymentStatus" class="form-select border-light bg-light">
+                                    <option value="1">✅ مدفوع</option>
+                                    <option value="0">⚠️ دين</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="DueDate" class="form-label fw-bold small">تاريخ الاستحقاق</label>
+                                <input asp-for="DueDate" class="form-control border-light bg-light" type="date" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                        <h6 class="fw-bold mb-0 text-dark">📦 أصناف الفاتورة</h6>
+                        <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" onclick="addRow()">
+                            <i class="bi bi-plus-lg me-1"></i> إضافة منتج
+                        </button>
+                    </div>
+                    <div class="table-responsive" style="min-height: 300px;">
+                        <table class="table align-middle">
+                            <thead class="bg-light">
+                                <tr class="small text-muted text-uppercase">
+                                    <th style="width: 45%;" class="ps-4">المنتج</th>
+                                    <th style="width: 20%;" class="text-center">الكمية</th>
+                                    <th style="width: 25%;" class="text-center">سعر الوحدة</th>
+                                    <th style="width: 10%;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="rows">
+                                @if (Model.Items != null)
+                                {
+                                    for (int i = 0; i < Model.Items.Count; i++)
+                                    {
+                                        <tr>
+                                            <td class="ps-4" style="position: relative;">
+                                                <input type="text" class="form-control form-control-sm border-0 bg-light product-search" 
+                                                       placeholder="ابحث بالاسم أو الباركود..." data-index="@i" value="@Model.Items[i].ProductName" />
+                                                <input asp-for="Items[i].ProductId" type="hidden" />
+                                                <div class="search-results shadow-sm rounded-3 border-0" style="display: none;"></div>
+                                            </td>
+                                            <td>
+                                                <input asp-for="Items[i].Quantity" class="form-control form-control-sm border-0 bg-light text-center quantity-input" 
+                                                       type="number" min="1" onchange="calculateTotals()" />
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="unit-price-display fw-bold text-primary small">@Model.Items[i].TotalPrice.ToString("N2")</span>
+                                                <input asp-for="Items[i].TotalPrice" type="hidden" name="Items[@i].UnitPrice" /> 
+                                                @* ملاحظة: تأكد من تطابق اسم الـ UnitPrice مع الـ ViewModel *@
+                                            </td>
+                                            <td class="pe-3 text-end">
+                                                <button type="button" class="btn btn-link text-danger p-0" onclick="removeRow(this)">
+                                                    <i class="bi bi-trash3 fs-5"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-4 border-bottom pb-2 text-dark">الملخص المالي</h6>
+                        
+                        <div class="mb-3">
+                            <label asp-for="TaxAmount" class="form-label small fw-bold">مبلغ الضريبة</label>
+                            <div class="input-group input-group-sm">
+                                <input asp-for="TaxAmount" class="form-control border-light bg-light" type="number" step="0.01" />
+                                <span class="input-group-text bg-light border-0 text-muted">RY</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="DiscountAmount" class="form-label small fw-bold">مبلغ الخصم</label>
+                            <div class="input-group input-group-sm">
+                                <input asp-for="DiscountAmount" class="form-control border-light bg-light text-danger" type="number" step="0.01" />
+                                <span class="input-group-text bg-light border-0 text-muted">RY</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-primary bg-opacity-10 rounded-4 p-3 mb-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-primary">المجموع الكلي:</span>
+                                <input id="totalAmount" class="form-control-plaintext text-end fw-bold text-primary fs-4 py-0" 
+                                       style="width: 140px;" readonly value="0.00" />
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-warning py-3 fw-bold rounded-3 shadow-sm">
+                                <i class="bi bi-save me-2"></i> حفظ التغييرات
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .bg-light { background-color: #f8f9fa !important; }
+    .product-search:focus { background-color: white !important; border: 1px solid #ffc107 !important; box-shadow: none !important; }
+    
+    .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        z-index: 1050;
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #eee;
+    }
+
+    .search-item {
+        padding: 10px 15px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        border-bottom: 1px solid #f8f9fa;
+        transition: 0.2s;
+    }
+
+    .search-item:hover { background-color: #fff9e6; color: #856404; }
+</style>
+
+@section Scripts {
+<script>
+function addRow() {
+    const index = document.querySelectorAll("#rows tr").length;
+    const row = `
+<tr>
+<td style="position: relative;">
+<input type="text" name="Items[${index}].ProductName" class="form-control product-search" placeholder="ابحث عن المنتج بالاسم أو الباركود" data-index="${index}" />
+<input name="Items[${index}].ProductId" type="hidden" />
+<div class="search-results" style="display: none;"></div>
+</td>
+<td><input name="Items[${index}].Quantity" class="form-control quantity-input" type="number" min="1" value="1" onchange="calculateTotals()" /></td>
+<td><span class="unit-price-display">0.00</span><input name="Items[${index}].UnitPrice" type="hidden" value="0" /></td>
+<td><button type="button" class="btn btn-danger" onclick="removeRow(this)">✖</button></td>
+</tr>`;
+    document.getElementById("rows").insertAdjacentHTML("beforeend", row);
+    attachSearchEvents();
+    calculateTotals();
+}
+
+function attachSearchEvents() {
+    document.querySelectorAll('.product-search').forEach(input => {
+        input.addEventListener('input', function() {
+            const query = this.value.trim();
+            const resultsDiv = this.nextElementSibling.nextElementSibling;
+
+            if (query.length < 2) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
+
+            fetch(`/Purchases/SearchProducts?query=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(products => {
+                    if (products.length === 0) {
+                        resultsDiv.innerHTML = '<div class="search-item">لا توجد نتائج</div>';
+                        resultsDiv.style.display = 'block';
+                        return;
+                    }
+
+                    const html = products.map(p => `
+                        <div class="search-item" data-id="${p.Id}" data-price="${p.LastPurchasePrice}" data-name="${p.Name}">
+                            ${p.Name} (${p.Barcode}) - المتاح: ${p.Quantity}
+                        </div>
+                    `).join('');
+                    resultsDiv.innerHTML = html;
+                    resultsDiv.style.display = 'block';
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        input.addEventListener('blur', function() {
+            setTimeout(() => {
+                this.nextElementSibling.nextElementSibling.style.display = 'none';
+            }, 150);
+        });
+    });
+
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('search-item')) {
+            const item = e.target;
+            const row = item.closest('tr');
+            const searchInput = row.querySelector('.product-search');
+            const hiddenId = row.querySelector('input[type="hidden"]');
+
+            searchInput.value = item.getAttribute('data-name');
+            hiddenId.value = item.getAttribute('data-id');
+
+            const price = item.getAttribute('data-price');
+            row.querySelector('.unit-price-display').textContent = parseFloat(price).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' });
+            row.querySelector('input[type="hidden"]').value = price;
+
+            item.closest('.search-results').style.display = 'none';
+            calculateTotals();
+        }
+    });
+}
+
+function calculateTotals() {
+    let subtotal = 0;
+    document.querySelectorAll('#rows tr').forEach(row => {
+        const quantity = parseFloat(row.querySelector('.quantity-input')?.value || 0);
+        const price = parseFloat(row.querySelector('input[name*="UnitPrice"]')?.value || 0);
+        subtotal += quantity * price;
+    });
+
+    const taxRate = parseFloat(document.querySelector('[name="TaxAmount"]')?.value || 0);
+    const discount = parseFloat(document.querySelector('[name="DiscountAmount"]')?.value || 0);
+    const total = subtotal + taxRate - discount;
+
+    document.getElementById('totalAmount').value = total.toFixed(2);
+}
+
+function removeRow(btn) {
+    btn.closest("tr").remove();
+    calculateTotals();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelector('[name="TaxAmount"]').addEventListener('input', calculateTotals);
+    document.querySelector('[name="DiscountAmount"]').addEventListener('input', calculateTotals);
+    attachSearchEvents();
+    calculateTotals();
+});
+</script>
+}  

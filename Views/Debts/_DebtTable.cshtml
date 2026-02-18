@@ -1,0 +1,94 @@
+@model IEnumerable<alnakhil.ViewModels.DebtVM>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>الاسم</th>
+            <th>رقم الفاتورة</th>
+            <th>تاريخ الفاتورة</th>
+            <th>تاريخ الاستحقاق</th>
+            <th>الإجمالي</th>
+            <th>المدفوع</th>
+            <th>المتبقي</th>
+            <th>الحالة</th>
+            <th>إجراءات</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="9" class="text-center text-muted">
+                    لا توجد ديون
+                </td>
+            </tr>
+        }
+        else
+        {
+            foreach (var d in Model)
+            {
+                <tr>
+                    <td>@d.Name</td>
+                    <td>@d.InvoiceNumber</td>
+                    <td>@d.InvoiceDate.ToString("yyyy-MM-dd")</td>
+                    <td>
+                        @(d.DueDate?.ToString("yyyy-MM-dd") ?? "-")
+                    </td>
+                    <td>@d.TotalAmount</td>
+                    <td>@d.AmountPaid</td>
+                    <td class="fw-bold text-danger">
+                        @d.RemainingAmount
+                    </td>
+                    <td>
+                        @if (d.PaymentStatus == PaymentStatus.Unpaid)
+                        {
+                            <span class="badge bg-danger">غير مدفوع</span>
+                        }
+                        else if (d.PaymentStatus == PaymentStatus.Deferred)
+                        {
+                            <span class="badge bg-warning text-dark">آجل</span>
+                        }
+                    </td>
+                    <td>
+                        @if (d.RemainingAmount > 0)
+                        {
+                            <button class="btn btn-sm btn-success"
+                                    onclick="showPayment(@d.Id)">
+                                💰 سداد
+                            </button>
+
+                            <form asp-action="Pay"
+                                method="post"
+                                id="pay-form-@d.Id"
+                                class="mt-2 d-none">
+
+                                <input type="hidden" name="Id" value="@d.Id" />
+                                <input type="number"
+                                    name="Amount"
+                                    class="form-control mb-2"
+                                    placeholder="المبلغ المدفوع"
+                                    min="1"
+                                    max="@d.RemainingAmount"
+                                    required />
+
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    ✔ تأكيد
+                                </button>
+                            </form>
+                        }else
+                        {
+                            <span class="badge bg-success">مدفوع</span>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+<script>
+    function showPayment(id) {
+        document
+            .getElementById("pay-form-" + id)
+            .classList.toggle("d-none");
+    }
+</script>

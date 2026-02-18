@@ -1,0 +1,376 @@
+@model alnakhil.ViewModels.SaleVM
+
+@{
+    ViewData["Title"] = "تعديل فاتورة مبيعات";
+}
+
+<style>
+    .search-results {
+        position: absolute;
+        z-index: 1000;
+        width: 100%;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    .search-item {
+        padding: 10px 15px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+        transition: 0.2s;
+    }
+    .search-item:hover { background-color: #f8f9fa; color: var(--primary-color); }
+    
+    .table-active { background-color: rgba(0, 184, 148, 0.05) !important; border: 2px solid var(--primary-color) !important; }
+    
+    .totals-card {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        border: 1px solid #eee;
+    }
+    
+    .unit-price-display { color: var(--primary-color); font-size: 1.1rem; }
+    
+    .shortcut-badge {
+        background: #dfe6e9;
+        color: #636e72;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        margin-right: 5px;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">✏️ تعديل فاتورة مبيعات</h3>
+            <p class="text-muted small">يمكنك إضافة أو حذف منتجات وتعديل حالة الدفع.</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-light text-dark border p-2 mb-2">
+                <i class="bi bi-keyboard me-2"></i> اختصارات: 
+                <span class="shortcut-badge">F2</span> بحث | 
+                <span class="shortcut-badge">F9</span> حفظ | 
+                <span class="shortcut-badge">+ / -</span> كمية
+            </span>
+        </div>
+    </div>
+
+    <form asp-action="Edit" method="post" id="saleForm">
+        <input type="hidden" asp-for="Id" />
+        
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">👤 اسم العميل</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-person text-muted"></i></span>
+                            <input asp-for="CustomerName" class="form-control border-start-0 ps-0" placeholder="اسم العميل (اختياري)" />
+                        </div>
+                        <span asp-validation-for="CustomerName" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">💳 حالة الدفع</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-credit-card text-muted"></i></span>
+                            <select asp-for="PaymentStatus" class="form-select border-start-0 ps-0">
+                                <option value="0">⚠️ آجل (دين)</option>
+                                <option value="1">✅ مدفوع نقداً</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">📦 محتويات الفاتورة</h5>
+                <button type="button" class="btn btn-primary-pos btn-sm" onclick="addRow()">
+                    <i class="bi bi-plus-lg"></i> إضافة منتج جديد
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-muted small">
+                        <tr>
+                            <th style="width: 200px;">الباركود</th>
+                            <th>المنتج</th>
+                            <th style="width: 120px;">الكمية</th>
+                            <th style="width: 150px;">سعر الوحدة</th>
+                            <th style="width: 150px;">المجموع</th>
+                            <th style="width: 50px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="rows">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="alert alert-info border-0 rounded-4 p-3">
+                    <h6 class="fw-bold"><i class="bi bi-info-circle me-2"></i> ملاحظات التعديل</h6>
+                    <ul class="small mb-0 mt-2">
+                        <li>عند تغيير الكمية، سيتم إعادة احتساب الضرائب والمجاميع تلقائياً.</li>
+                        <li>تأكد من أن جميع المنتجات المضافة تحتوي على باركود وسعر صحيح.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="totals-card shadow-sm">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">المجموع الفرعي:</span>
+                        <div class="input-group input-group-sm w-50">
+                            <input id="subtotal" class="form-control text-end border-0 bg-transparent fw-bold" readonly />
+                            <span class="input-group-text bg-transparent border-0 small">RY</span>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted text-success">الضريبة (15%):</span>
+                        <div class="input-group input-group-sm w-50">
+                            <input id="taxAmount" class="form-control text-end border-0 bg-transparent text-success fw-bold" readonly />
+                            <span class="input-group-text bg-transparent border-0 small text-success">RY</span>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3 border-bottom pb-3">
+                        <span class="text-muted text-danger">الخصم:</span>
+                        <div class="input-group input-group-sm w-50">
+                            <input asp-for="DiscountAmount" class="form-control text-end border-danger text-danger fw-bold rounded-2" type="number" step="0.01" onchange="calculateTotals()" />
+                            <span class="input-group-text bg-transparent border-0 small text-danger">RY</span>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0">الإجمالي النهائي:</h5>
+                        <div class="input-group w-50">
+                            <input id="totalAmount" class="form-control text-end border-0 bg-transparent fw-bold fs-4 text-primary" readonly />
+                            <span class="input-group-text bg-transparent border-0 fw-bold text-primary">RY</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 d-grid gap-2">
+                    <button type="submit" class="btn btn-primary-pos py-3 shadow">
+                        <i class="bi bi-save me-2"></i> حفظ تعديلات الفاتورة
+                    </button>
+                    <a asp-action="Index" class="btn btn-light py-2">إلغاء والرجوع</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@* JavaScript Data Part *@
+<script>
+    const existingItems = @Html.Raw(
+        System.Text.Json.JsonSerializer.Serialize(
+            Model.Items.Select(i => new {
+                productId = i.ProductId,
+                name = i.ProductName,
+                barcode = i.ProductBarcode,
+                quantity = i.Quantity,
+                unitPrice = i.UnitPrice
+            })
+        )
+    );
+</script>
+
+@section Scripts {
+<script>
+let activeRow = null;
+
+function addRow() {
+    const index = document.querySelectorAll("#rows tr").length;
+    const row = `
+    <tr class="transition">
+        <td style="position:relative">
+            <input type="text" class="form-control barcode-input border-0 bg-light" placeholder="📦 باركود" />
+        </td>
+        <td style="position:relative">
+            <input type="text" class="form-control product-name-input border-0 bg-light" placeholder="🔍 اسم المنتج" />
+            <input type="hidden" name="Items[${index}].ProductId" />
+            <input type="hidden" name="Items[${index}].UnitPrice" value="0" />
+            <div class="search-results d-none"></div>
+        </td>
+        <td>
+            <input type="number" name="Items[${index}].Quantity" class="form-control quantity-input text-center fw-bold" min="1" value="1" />
+        </td>
+        <td>
+            <div class="unit-price-display fw-bold text-center">0.00</div>
+        </td>
+        <td>
+            <div class="row-total fw-bold text-center text-dark">0.00</div>
+        </td>
+        <td class="text-end">
+            <button type="button" class="btn btn-outline-danger btn-sm border-0 rounded-circle" onclick="removeRow(this)">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+    </tr>`;
+
+    document.getElementById("rows").insertAdjacentHTML("beforeend", row);
+    const newRow = document.querySelector("#rows tr:last-child");
+    setActiveRow(newRow);
+    bindEvents();
+    calculateTotals();
+}
+
+function setActiveRow(row) {
+    document.querySelectorAll("#rows tr").forEach(r => r.classList.remove("table-active"));
+    if (!row) return;
+    row.classList.add("table-active");
+    activeRow = row;
+}
+
+document.addEventListener("click", (e) => {
+    const row = e.target.closest("#rows tr");
+    if (row) setActiveRow(row);
+});
+
+// Keyboard Shortcuts
+document.addEventListener("keydown", (e) => {
+    if (!activeRow) return;
+    const qtyInput = activeRow.querySelector(".quantity-input");
+    if (e.key === "+") { e.preventDefault(); qtyInput.value = parseInt(qtyInput.value) + 1; calculateTotals(); }
+    if (e.key === "-") { e.preventDefault(); if (qtyInput.value > 1) { qtyInput.value = parseInt(qtyInput.value) - 1; calculateTotals(); } }
+    if (e.key === "Delete") { if(confirm('حذف هذا المنتج؟')) { activeRow.remove(); activeRow = null; calculateTotals(); } }
+    if (e.key === "F2") { e.preventDefault(); activeRow.querySelector(".barcode-input")?.focus(); }
+    if (e.key === "F9") { e.preventDefault(); document.getElementById("saleForm").submit(); }
+});
+
+function bindEvents() {
+    bindBarcodeEvents();
+    bindNameSearchEvents();
+    bindQuantityEvents();
+}
+
+function bindBarcodeEvents() {
+    document.querySelectorAll(".barcode-input").forEach(input => {
+        if (input.dataset.bound) return;
+        input.dataset.bound = "1";
+        input.addEventListener("keydown", function (e) {
+            if (e.key !== "Enter") return;
+            e.preventDefault();
+            const barcode = this.value.trim();
+            if (!barcode) return;
+            fetch(`/Sales/SearchProducts?query=${barcode}`)
+                .then(r => r.json())
+                .then(products => {
+                    if (products.length >= 1) fillRow(this.closest("tr"), products[0]);
+                });
+        });
+    });
+}
+
+function bindNameSearchEvents() {
+    document.querySelectorAll(".product-name-input").forEach(input => {
+        if (input.dataset.bound) return;
+        input.dataset.bound = "1";
+        input.addEventListener("input", function () {
+            const query = this.value.trim();
+            const results = this.closest("td").querySelector(".search-results");
+            if (query.length < 2) { results.classList.add("d-none"); return; }
+            fetch(`/Sales/SearchProducts?query=${query}`)
+                .then(r => r.json())
+                .then(products => {
+                    results.innerHTML = products.map(p => `
+                        <div class="search-item" data-product='${JSON.stringify(p)}'>
+                            <div class="fw-bold">${p.name}</div>
+                            <small class="text-muted">الباركود: ${p.barcode} | السعر: ${p.salePrice}</small>
+                        </div>`).join("");
+                    results.classList.remove("d-none");
+                });
+        });
+    });
+}
+
+document.addEventListener("mousedown", (e) => {
+    const item = e.target.closest(".search-item");
+    if (!item) return;
+    e.preventDefault();
+    fillRow(item.closest("tr"), JSON.parse(item.dataset.product));
+});
+
+function fillRow(row, product) {
+    const existingRow = findExistingRow(product.id);
+    if (existingRow && existingRow !== row) {
+        const qty = existingRow.querySelector(".quantity-input");
+        qty.value = parseInt(qty.value) + 1;
+        row.remove();
+        calculateTotals();
+        return;
+    }
+    row.querySelector(".barcode-input").value = product.barcode;
+    row.querySelector(".product-name-input").value = product.name;
+    row.querySelector('input[name*="ProductId"]').value = product.id;
+    row.querySelector('input[name*="UnitPrice"]').value = product.salePrice;
+    row.querySelector(".unit-price-display").textContent = product.salePrice.toFixed(2);
+    row.querySelector(".search-results").classList.add("d-none");
+    calculateTotals();
+}
+
+function findExistingRow(productId) {
+    let found = null;
+    document.querySelectorAll("#rows tr").forEach(row => {
+        if (row.querySelector('input[name*="ProductId"]')?.value == productId) found = row;
+    });
+    return found;
+}
+
+function bindQuantityEvents() {
+    document.querySelectorAll(".quantity-input").forEach(input => {
+        if (input.dataset.bound) return;
+        input.dataset.bound = "1";
+        input.addEventListener("input", calculateTotals);
+    });
+}
+
+function calculateTotals() {
+    let subtotal = 0;
+    document.querySelectorAll("#rows tr").forEach(row => {
+        const qty = parseFloat(row.querySelector(".quantity-input")?.value || 0);
+        const price = parseFloat(row.querySelector('input[name*="UnitPrice"]')?.value || 0);
+        const rowTotal = qty * price;
+        row.querySelector(".row-total").textContent = rowTotal.toFixed(2);
+        subtotal += rowTotal;
+    });
+
+    const taxRate = 15;
+    const tax = subtotal * (taxRate / 100);
+    const discount = parseFloat(document.querySelector('[name="DiscountAmount"]')?.value || 0);
+
+    document.getElementById("subtotal").value = subtotal.toFixed(2);
+    document.getElementById("taxAmount").value = tax.toFixed(2);
+    document.getElementById("totalAmount").value = (subtotal + tax - discount).toFixed(2);
+}
+
+function removeRow(btn) {
+    btn.closest("tr").remove();
+    calculateTotals();
+}
+
+function loadExistingItems() {
+    if (!existingItems || existingItems.length === 0) { addRow(); return; }
+    existingItems.forEach((item, idx) => {
+        addRow();
+        const row = document.querySelectorAll("#rows tr")[idx];
+        row.querySelector(".barcode-input").value = item.barcode;
+        row.querySelector(".product-name-input").value = item.name;
+        row.querySelector('input[name*="ProductId"]').value = item.productId;
+        row.querySelector(".quantity-input").value = item.quantity;
+        row.querySelector('input[name*="UnitPrice"]').value = item.unitPrice;
+        row.querySelector(".unit-price-display").textContent = item.unitPrice.toFixed(2);
+    });
+    calculateTotals();
+}
+
+document.addEventListener("DOMContentLoaded", loadExistingItems);
+</script>
+} 

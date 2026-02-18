@@ -1,0 +1,63 @@
+@model alnakhil.Models.Product
+@{
+    ViewData["Title"] = "تأكيد حذف المنتج";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-danger p-4 text-center">
+                    <div class="rounded-circle bg-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <i class="bi bi-exclamation-triangle-fill text-danger fs-2"></i>
+                    </div>
+                    <h4 class="text-white fw-bold mb-0">تأكيد الحذف النهائي</h4>
+                </div>
+
+                <div class="card-body p-4 text-center">
+                    <p class="text-muted">أنت على وشك حذف هذا المنتج من قاعدة البيانات. لا يمكن التراجع عن هذا الإجراء بعد تنفيذه.</p>
+                    
+                    <div class="bg-light rounded-4 p-3 mb-4 border-start border-danger border-5">
+                        <div class="d-flex justify-content-between align-items-center mb-2 text-end">
+                            <span class="text-muted small">اسم المنتج:</span>
+                            <span class="fw-bold text-dark">@Model.Name</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2 text-end">
+                            <span class="text-muted small">الباركود:</span>
+                            <span class="badge bg-white text-dark border fw-normal">@Model.Barcode</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center text-end">
+                            <span class="text-muted small">الكمية المتوفرة:</span>
+                            <span class="fw-bold text-danger">@Model.Quantity وحدة</span>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning border-0 small text-end">
+                        <i class="bi bi-info-circle me-1"></i>
+                        ملاحظة: سيتم حذف بيانات المنتج، ولكن قد تظل سجلات الفواتير القديمة مرتبطة به كبيانات تاريخية.
+                    </div>
+
+                    <form asp-action="DeleteConfirmed" method="post" class="mt-4">
+                        <input type="hidden" asp-for="Id" />
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger py-3 fw-bold rounded-3 shadow-sm">
+                                <i class="bi bi-trash3 me-2"></i> نعم، قم بالحذف
+                            </button>
+                            <a asp-action="Index" class="btn btn-light py-2 text-muted">
+                                تراجع عن الحذف
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body { background-color: #f8f9fa; }
+    .card { border-radius: 20px; }
+    .btn-danger { transition: 0.3s; }
+    .btn-danger:hover { background-color: #bb2d3b; transform: translateY(-2px); }
+</style>
