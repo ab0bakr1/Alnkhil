@@ -7,6 +7,6 @@ namespace alnakhil.Models
     {
         public int Id { get; set; }
         public decimal ProfitPercentage { get; set; } // مثال: 20
-        public decimal TaxPercentage { get; set; } = 15; // نسبة الضريبة الثابتة (مثال: 15%)
+        public decimal TaxPercentage { get; set; } = 0; // نسبة الضريبة الثابتة
     }
 }

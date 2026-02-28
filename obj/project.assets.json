@@ -8115,11 +8115,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\aboba\\OneDrive\\Desktop\\alnakhil\\alnakhil.csproj",
+      "projectUniqueName": "C:\\Users\\aboba\\OneDrive\\Desktop\\Alnkhil\\alnakhil.csproj",
       "projectName": "alnakhil",
-      "projectPath": "C:\\Users\\aboba\\OneDrive\\Desktop\\alnakhil\\alnakhil.csproj",
+      "projectPath": "C:\\Users\\aboba\\OneDrive\\Desktop\\Alnkhil\\alnakhil.csproj",
       "packagesPath": "C:\\Users\\aboba\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\aboba\\OneDrive\\Desktop\\alnakhil\\obj\\",
+      "outputPath": "C:\\Users\\aboba\\OneDrive\\Desktop\\Alnkhil\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\aboba\\AppData\\Roaming\\NuGet\\NuGet.Config"
