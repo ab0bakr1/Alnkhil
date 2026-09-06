@@ -539,3 +539,4 @@ C:\Users\aboba\OneDrive\Desktop\Alnkhil\obj\Debug\net8.0\refint\alnakhil.dll
 C:\Users\aboba\OneDrive\Desktop\Alnkhil\obj\Debug\net8.0\alnakhil.pdb
 C:\Users\aboba\OneDrive\Desktop\Alnkhil\obj\Debug\net8.0\alnakhil.genruntimeconfig.cache
 C:\Users\aboba\OneDrive\Desktop\Alnkhil\obj\Debug\net8.0\ref\alnakhil.dll
+C:\Users\aboba\OneDrive\Desktop\Alnkhil\bin\Debug\net8.0\appsettings.Production.json
