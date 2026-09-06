@@ -39,33 +39,57 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small fw-bold">حالة الفاتورة</label>
-                        <select asp-for="PaymentStatus" class="form-select form-select-sm border-light bg-light fw-bold">
-                            <option value="Paid">✅ مدفوعة</option>
+                        <select asp-for="PaymentStatus" id="paymentStatusSelect" class="form-select form-select-sm border-light bg-light fw-bold">
+                            <option value="Paid">✅ مدفوعة (كاش)</option>
+                            <option value="Deferred">⚠️ دين آجل</option>
                             <option value="Unpaid">❌ غير مدفوعة</option>
-                            <option value="Deferred">⚠️ آجل</option>
                         </select>
+                    </div>
+
+                    <!-- تاريخ الاستحقاق (يظهر عند اختيار دين آجل) -->
+                    <div class="col-12" id="dueDateContainer" style="display: none;">
+                        <div class="p-3 bg-danger-subtle border border-danger-subtle rounded-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div class="d-flex align-items-center gap-2 text-danger">
+                                <i class="bi bi-exclamation-octagon-fill fs-5"></i>
+                                <div>
+                                    <span class="fw-bold small">الفاتورة مسجلة كـ (دين آجل)</span>
+                                    <span class="text-muted small d-block d-sm-inline ms-sm-2">— يجب كتابة وتحديد تاريخ الاستحقاق لسداد الدين للمورد</span>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <label asp-for="DueDate" class="form-label mb-0 small fw-bold text-dark text-nowrap">
+                                    تاريخ الاستحقاق <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group input-group-sm" style="min-width: 210px;">
+                                    <span class="input-group-text bg-white border-danger text-danger"><i class="bi bi-calendar-check"></i></span>
+                                    <input asp-for="DueDate" type="date" id="dueDateInput" class="form-control border-danger bg-white fw-bold" />
+                                </div>
+                            </div>
+                        </div>
+                        <span asp-validation-for="DueDate" class="text-danger small fw-bold mt-1 d-block"></span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
                 <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-box-seam me-2"></i> الأصناف الموردة</h6>
                 <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="addRow()">
                     <i class="bi bi-plus-lg me-1"></i> إضافة صنف جديد
                 </button>
             </div>
-            <div class="table-responsive">
-                <table class="table align-middle">
+            <div class="table-responsive" style="min-height: 420px;">
+                <table class="table align-middle" style="table-layout: fixed;">
                     <thead class="bg-light">
                         <tr class="small text-muted text-uppercase">
-                            <th style="width: 25%;" class="ps-4">المنتج / البحث</th>
-                            <th style="width: 15%;">الباركود</th>
-                            <th style="width: 10%;" class="text-center">الكمية</th>
-                            <th style="width: 15%;">التصنيف</th>
-                            <th style="width: 15%;">تاريخ الانتهاء</th>
-                            <th style="width: 15%;">سعر الشراء</th>
+                            <th style="width: 22%;" class="ps-4">المنتج / البحث</th>
+                            <th style="width: 12%;">الباركود</th>
+                            <th style="width: 8%;" class="text-center">الكمية</th>
+                            <th style="width: 12%;">التصنيف</th>
+                            <th style="width: 12%;">تاريخ الانتهاء</th>
+                            <th style="width: 14%;">سعر الشراء (الإجمالي)</th>
+                            <th style="width: 12%;" class="text-success">سعر الوحدة</th>
                             <th style="width: 5%;"></th>
                         </tr>
                     </thead>
@@ -77,7 +101,7 @@
 
         <div class="row g-4 mb-5">
             <div class="col-lg-8">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card border-0 shadow-sm rounded-4">
                     <div class="card-body">
                         <h6 class="fw-bold mb-3 small">الضرائب والخصومات</h6>
                         <div class="row g-3">
@@ -145,7 +169,44 @@
     <script>
     let itemIndex = 0;
 
-    document.addEventListener("DOMContentLoaded", () => addRow());
+    // بناء قائمة التصنيفات مرة واحدة
+    const categoriesOptions = `@foreach(var c in (ViewBag.Categories as IEnumerable<alnakhil.Models.Category> ?? Enumerable.Empty<alnakhil.Models.Category>()) ) { <text><option value="@c.Id">@c.Name</option></text> }`;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        addRow();
+        toggleDueDate();
+    });
+
+    function toggleDueDate() {
+        const statusSelect = document.getElementById("paymentStatusSelect");
+        const container = document.getElementById("dueDateContainer");
+        const input = document.getElementById("dueDateInput");
+
+        if (!statusSelect || !container || !input) return;
+
+        if (statusSelect.value === "Deferred") {
+            container.style.display = "block";
+            input.setAttribute("required", "required");
+        } else {
+            container.style.display = "none";
+            input.removeAttribute("required");
+            input.classList.remove("is-invalid");
+        }
+    }
+
+    const statusSelectEl = document.getElementById("paymentStatusSelect");
+    if (statusSelectEl) {
+        statusSelectEl.addEventListener("change", toggleDueDate);
+    }
+
+    const dueDateInputEl = document.getElementById("dueDateInput");
+    if (dueDateInputEl) {
+        dueDateInputEl.addEventListener("input", function () {
+            if (this.value) {
+                this.classList.remove("is-invalid");
+            }
+        });
+    }
 
     function addRow() {
         const row = `
@@ -177,14 +238,15 @@
                 class="form-control"
                 min="1"
                 value="1"
-                oninput="calculateTotal()" />
+                oninput="updateUnitPrice(this.closest('tr').querySelector('.purchase-price-input')); calculateTotal()" />
         </td>
 
         <td>
-            <input name="Items[${itemIndex}].CategoryName"
-                type="text"
-                class="form-control"
-                placeholder="اختياري" />
+            <select name="Items[${itemIndex}].CategoryId"
+                class="form-control category-select">
+                <option value="">-- اختياري --</option>
+                ${categoriesOptions}
+            </select>
         </td>
 
         <td>
@@ -196,9 +258,17 @@
         <td>
             <input name="Items[${itemIndex}].PurchasePrice"
                 type="number"
-                class="form-control"
+                class="form-control purchase-price-input"
                 step="0.01"
-                oninput="calculateTotal()" />
+                oninput="updateUnitPrice(this); calculateTotal()" />
+        </td>
+
+        <td>
+            <input type="text"
+                class="form-control unit-price-display bg-light text-success fw-bold"
+                readonly
+                placeholder="0.00"
+                title="يتم تخزين سعر الوحدة تلقائياً" />
         </td>
 
         <td>
@@ -214,6 +284,15 @@
     function removeRow(btn) {
         btn.closest("tr").remove();
         calculateTotal();
+    }
+
+    function updateUnitPrice(priceInput) {
+        const row = priceInput.closest("tr");
+        const qty = parseFloat(row.querySelector('input[name$=".Quantity"]').value) || 1;
+        const price = parseFloat(priceInput.value) || 0;
+        const unit = qty > 0 ? (price / qty) : price;
+        const display = row.querySelector('.unit-price-display');
+        if (display) display.value = unit.toFixed(2);
     }
 
 
@@ -278,9 +357,17 @@
                             const row = input.closest("tr");
 
                             // 👇 تعبئة تلقائية
+                            const priceInput = row.querySelector('.purchase-price-input');
+                            priceInput.value = p.purchasePrice ?? 0;
+                            updateUnitPrice(priceInput);
+
                             row.querySelector('input[name$=".Barcode"]').value = p.barcode ?? "";
-                            row.querySelector('input[name$=".PurchasePrice"]').value = p.purchasePrice ?? 0;
-                            row.querySelector('input[name$=".CategoryName"]').value = p.category ?? "";
+
+                            // تعبئة التصنيف
+                            const catSelect = row.querySelector('.category-select');
+                            if (catSelect && p.categoryId) {
+                                catSelect.value = p.categoryId;
+                            }
 
                             list.classList.add("d-none");
                             calculateTotal();
@@ -289,12 +376,58 @@
                     });
                 });
         });
-        document.querySelector("form").addEventListener("submit", function (e) {
-            let valid = true;
+        document.getElementById("purchaseForm")?.addEventListener("submit", function (e) {
+            const statusSelect = document.getElementById("paymentStatusSelect");
+            const dueDateInput = document.getElementById("dueDateInput");
 
-            if (!valid) {
-                alert("⚠️ اختر المنتج من القائمة");
+            // التحقق من تاريخ الاستحقاق إذا كانت الفاتورة دين آجل
+            if (statusSelect && statusSelect.value === "Deferred") {
+                if (!dueDateInput || !dueDateInput.value.trim()) {
+                    e.preventDefault();
+                    if (dueDateInput) {
+                        dueDateInput.classList.add("is-invalid");
+                        dueDateInput.focus();
+                    }
+                    alert("⚠️ الفاتورة مسجلة كـ (دين آجل)، يجب كتابة وتحديد تاريخ الاستحقاق!");
+                    return false;
+                }
+            }
+
+            // التحقق من وجود أصناف
+            const rows = document.querySelectorAll("#itemsBody tr");
+            if (rows.length === 0) {
                 e.preventDefault();
+                alert("⚠️ يجب إضافة صنف واحد على الأقل في الفاتورة.");
+                return false;
+            }
+
+            let hasValidItem = false;
+            for (let r of rows) {
+                const nameInput = r.querySelector('input[name$=".ProductName"]');
+                const priceInput = r.querySelector('input[name$=".PurchasePrice"]');
+                const qtyInput = r.querySelector('input[name$=".Quantity"]');
+
+                if (nameInput && nameInput.value.trim()) {
+                    hasValidItem = true;
+                    if (!priceInput || parseFloat(priceInput.value) <= 0) {
+                        e.preventDefault();
+                        alert("⚠️ يرجى التأكد من كتابة سعر شراء صحيح للأصناف.");
+                        priceInput?.focus();
+                        return false;
+                    }
+                    if (!qtyInput || parseFloat(qtyInput.value) <= 0) {
+                        e.preventDefault();
+                        alert("⚠️ يرجى التأكد من كتابة كمية صحيحة للأصناف.");
+                        qtyInput?.focus();
+                        return false;
+                    }
+                }
+            }
+
+            if (!hasValidItem) {
+                e.preventDefault();
+                alert("⚠️ يرجى إدخال اسم صنف واحد على الأقل.");
+                return false;
             }
         });
 

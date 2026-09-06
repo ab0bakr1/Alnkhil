@@ -134,7 +134,7 @@
                         </div>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted text-success">الضريبة (15%):</span>
+                        <span class="text-muted text-success">الضريبة (0%):</span>
                         <div class="input-group input-group-sm w-50">
                             <input id="taxAmount" class="form-control text-end border-0 bg-transparent text-success fw-bold" readonly />
                             <span class="input-group-text bg-transparent border-0 small text-success">RY</span>
@@ -150,7 +150,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="fw-bold mb-0">الإجمالي النهائي:</h5>
                         <div class="input-group w-50">
-                            <input id="totalAmount" class="form-control text-end border-0 bg-transparent fw-bold fs-4 text-primary" readonly />
+                            <input id="totalAmount" class="form-control text-end border-0 bg-transparent fw-bold fs- text-primary" readonly />
                             <span class="input-group-text bg-transparent border-0 fw-bold text-primary">RY</span>
                         </div>
                     </div>
@@ -342,7 +342,7 @@ function calculateTotals() {
         subtotal += rowTotal;
     });
 
-    const taxRate = 15;
+    const taxRate = 0;
     const tax = subtotal * (taxRate / 100);
     const discount = parseFloat(document.querySelector('[name="DiscountAmount"]')?.value || 0);
 

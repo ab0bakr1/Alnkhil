@@ -24,6 +24,11 @@ namespace alnakhil.Controllers
                 {
                     ProductId = p.Id,
                     ProductName = p.Name,
+                    LastPurchasePrice = _context.PurchaseItems
+                        .Where(pi => pi.ProductId == p.Id && pi.Quantity > 0)
+                        .OrderByDescending(pi => pi.Id)
+                        .Select(pi => (decimal?)(pi.PurchasePrice / pi.Quantity))
+                        .FirstOrDefault() ?? p.PurchasePrice,
                     SalePrice = p.SalePrice,
                     Quantity = p.Quantity
                 })
@@ -44,6 +49,8 @@ namespace alnakhil.Controllers
             if (product == null) return NotFound();
 
             product.SalePrice = salePrice;
+            product.IsManualPrice = true;
+            product.ManualSalePrice = salePrice;
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));

@@ -68,7 +68,7 @@
                                 <span class="fw-bold text-primary">@totalAmount.ToString("N0")</span> <small class="text-muted" style="font-size: 10px;">RY</small>
                             </td>
                             <td class="text-center">
-                                @if (sale.PaymentStatus == 0)
+                                @if (sale.PaymentStatus == PaymentStatus.Deferred)
                                 {
                                     <span class="badge bg-warning-subtle text-warning px-3 rounded-pill">
                                         <i class="bi bi-clock-history me-1"></i> دين

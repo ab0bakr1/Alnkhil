@@ -25,7 +25,7 @@ namespace alnakhil.Controllers
             {
                 ProductsCount = await _context.Products.CountAsync(),
                 LowStockCount = await _context.Products
-                    .CountAsync(p => p.Quantity <= 5),
+                    .CountAsync(p => p.Quantity <= 50),
 
                 TodaySales = await _context.Sales
                     .Where(s => s.SaleDate.Date == today)

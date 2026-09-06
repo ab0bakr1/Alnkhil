@@ -33,14 +33,16 @@
                             </div>
                             <div class="col-md-4">
                                 <label asp-for="PaymentStatus" class="form-label fw-bold small">حالة الدفع</label>
-                                <select asp-for="PaymentStatus" class="form-select border-light bg-light">
-                                    <option value="1">✅ مدفوع</option>
-                                    <option value="0">⚠️ دين</option>
+                                <select asp-for="PaymentStatus" class="form-select border-light bg-light" id="paymentStatusSelect">
+                                    <option value="Paid">✅ مدفوع</option>
+                                    <option value="Deferred">⚠️ دين آجل</option>
+                                    <option value="Unpaid">❌ غير مدفوع</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
                                 <label asp-for="DueDate" class="form-label fw-bold small">تاريخ الاستحقاق</label>
-                                <input asp-for="DueDate" class="form-control border-light bg-light" type="date" />
+                                <input asp-for="DueDate" id="dueDateInput" class="form-control border-light bg-light" type="date" />
+                                <span asp-validation-for="DueDate" class="text-danger small"></span>
                             </div>
                         </div>
                     </div>
@@ -61,7 +63,7 @@
                                 <tr class="small text-muted text-uppercase">
                                     <th style="width: 45%;" class="ps-4">المنتج</th>
                                     <th style="width: 20%;" class="text-center">الكمية</th>
-                                    <th style="width: 25%;" class="text-center">سعر الوحدة</th>
+                                    <th style="width: 25%;" class="text-center">سعر الشراء</th>
                                     <th style="width: 10%;"></th>
                                 </tr>
                             </thead>
@@ -251,7 +253,7 @@ function calculateTotals() {
     document.querySelectorAll('#rows tr').forEach(row => {
         const quantity = parseFloat(row.querySelector('.quantity-input')?.value || 0);
         const price = parseFloat(row.querySelector('input[name*="UnitPrice"]')?.value || 0);
-        subtotal += quantity * price;
+        subtotal += price;
     });
 
     const taxRate = parseFloat(document.querySelector('[name="TaxAmount"]')?.value || 0);
@@ -267,10 +269,27 @@ function removeRow(btn) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelector('[name="TaxAmount"]').addEventListener('input', calculateTotals);
-    document.querySelector('[name="DiscountAmount"]').addEventListener('input', calculateTotals);
+    document.querySelector('[name="TaxAmount"]')?.addEventListener('input', calculateTotals);
+    document.querySelector('[name="DiscountAmount"]')?.addEventListener('input', calculateTotals);
     attachSearchEvents();
     calculateTotals();
+
+    document.querySelector('form')?.addEventListener('submit', function(e) {
+        const statusSelect = document.getElementById('paymentStatusSelect');
+        const dueDateInput = document.getElementById('dueDateInput');
+
+        if (statusSelect && (statusSelect.value === 'Deferred' || statusSelect.value === '2')) {
+            if (!dueDateInput || !dueDateInput.value.trim()) {
+                e.preventDefault();
+                if (dueDateInput) {
+                    dueDateInput.classList.add('is-invalid');
+                    dueDateInput.focus();
+                }
+                alert('⚠️ الفاتورة مسجلة كـ (دين آجل)، يجب كتابة وتحديد تاريخ الاستحقاق!');
+                return false;
+            }
+        }
+    });
 });
 </script>
 }  

@@ -105,6 +105,7 @@
                                 {
                                     <form asp-action="Pay" method="post" class="d-flex gap-1">
                                         <input type="hidden" name="Id" value="@d.Id" />
+                                        <input type="hidden" name="Type" value="@Model.Type" />
                                         <div class="input-group input-group-sm">
                                             <input type="number" name="Amount" class="form-control border-success" 
                                                    placeholder="المبلغ" min="1" max="@d.RemainingAmount" required />

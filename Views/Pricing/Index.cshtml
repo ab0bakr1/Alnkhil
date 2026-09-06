@@ -24,7 +24,7 @@
                         <th class="ps-4 py-3">المنتج</th>
                         <th class="text-center">الكمية الحالية</th>
                         <th class="text-center">آخر سعر شراء</th>
-                        <th class="text-center">سعر البيع المقترح</th>
+                        <th class="text-center">سعر البيع الحالي</th>
                         <th class="text-center" style="width: 250px;">تعديل سعر البيع</th>
                         <th class="text-center">هامش الربح</th>
                     </tr>
@@ -32,9 +32,10 @@
                 <tbody>
                     @foreach (var item in Model)
                     {
-                        // حساب هامش الربح للتوضيح البصري
-                        var profit = item.SalePrice - item.LastPurchasePrice;
-                        var profitPercent = item.LastPurchasePrice > 0 ? (profit / item.LastPurchasePrice) * 100 : 0;
+                        var hasCost = item.LastPurchasePrice > 0;
+                        var profit = hasCost ? item.SalePrice - item.LastPurchasePrice : 0;
+                        var markupPercent = hasCost ? (profit / item.LastPurchasePrice) * 100 : 0;
+                        var marginPercent = (hasCost && item.SalePrice > 0) ? (profit / item.SalePrice) * 100 : 0;
 
                         <tr>
                             <td class="ps-4">
@@ -46,30 +47,51 @@
                                     @item.Quantity
                                 </span>
                             </td>
-                            <td class="text-center fw-bold text-muted">
-                                @item.LastPurchasePrice.ToString("N2") <small>RY</small>
+                            <td class="text-center fw-bold">
+                                @if (hasCost)
+                                {
+                                    <span class="text-muted">@item.LastPurchasePrice.ToString("N2")</span> <small class="text-muted">RY</small>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-light text-muted border">غير مسجل</span>
+                                }
                             </td>
                             <td class="text-center">
-                                <span class="text-primary fw-bold">@item.SalePrice.ToString("N2")</span>
+                                <span class="text-primary fw-bold">@item.SalePrice.ToString("N2")</span> <small class="text-muted">RY</small>
                             </td>
                             <td>
                                 <form asp-action="Update" method="post" class="d-flex gap-2 justify-content-center">
                                     <input type="hidden" name="productId" value="@item.ProductId" />
                                     <div class="input-group input-group-sm" style="width: 150px;">
-                                        <input name="salePrice" value="@item.SalePrice" class="form-control border-info fw-bold text-center" />
+                                        <input type="number" step="0.01" min="0.01" name="salePrice" value="@item.SalePrice" class="form-control border-info fw-bold text-center" required />
                                         <span class="input-group-text bg-info border-info text-white small">RY</span>
                                     </div>
-                                    <button class="btn btn-info btn-sm text-white px-3 shadow-sm">
+                                    <button type="submit" class="btn btn-info btn-sm text-white px-3 shadow-sm" title="حفظ السعر">
                                         <i class="bi bi-check-lg"></i>
                                     </button>
                                 </form>
                             </td>
                             <td class="text-center">
-                                <div class="small fw-bold @(profitPercent < 10 ? "text-danger" : "text-success")">
-                                    <i class="bi @(profitPercent < 10 ? "bi-arrow-down-right" : "bi-arrow-up-right") me-1"></i>
-                                    @profitPercent.ToString("N1")%
-                                </div>
-                                <div class="text-muted" style="font-size: 10px;">صافي: @profit.ToString("N2")</div>
+                                @if (hasCost)
+                                {
+                                    var isLoss = profit < 0;
+                                    var isLow = !isLoss && markupPercent < 10;
+                                    var colorClass = isLoss ? "text-danger" : (isLow ? "text-warning" : "text-success");
+                                    var iconClass = isLoss ? "bi-arrow-down-right" : (isLow ? "bi-dash-lg" : "bi-arrow-up-right");
+
+                                    <div class="small fw-bold @colorClass" title="هامش الربح من سعر البيع: @marginPercent.ToString("N1")%">
+                                        <i class="bi @iconClass me-1"></i>
+                                        @(profit >= 0 ? "+" : "")@markupPercent.ToString("N1")%
+                                    </div>
+                                    <div class="text-muted" style="font-size: 11px;">
+                                        صافي: @(profit >= 0 ? "+" : "")@profit.ToString("N2") RY
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-light text-muted border">غير محدد</span>
+                                }
                             </td>
                         </tr>
                     }

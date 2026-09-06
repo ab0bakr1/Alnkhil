@@ -39,20 +39,18 @@ builder.Services.AddScoped<IEmailSender, EmailSender>();
 var app = builder.Build();
 
 
-// ================= إنشاء الأدوار (مرة واحدة) =================
+// ================= Seed Roles + Admin =================
 using (var scope = app.Services.CreateScope())
 {
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var services = scope.ServiceProvider;
 
-    string[] roles = { "Admin", "Cashier" };
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-    foreach (var role in roles)
-    {
-        if (!await roleManager.RoleExistsAsync(role))
-        {
-            await roleManager.CreateAsync(new IdentityRole(role));
-        }
-    }
+    await DbInitializer.SeedRolesAndAdminAsync(
+        userManager,
+        roleManager
+    );
 }
 
 

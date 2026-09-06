@@ -11,6 +11,9 @@ namespace alnakhil.ViewModels
 
         public string SupplierName { get; set; }
 
+        // 🆕 ربط بالمورد الفعلي (بدل الاسم كنص فقط)
+        public int? SupplierId { get; set; }
+
         public DateTime PurchaseDate { get; set; } = DateTime.Now;
 
         // ================= الضريبة والخصم =================

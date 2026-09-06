@@ -152,6 +152,9 @@
                 <a class="nav-link text-warning" asp-controller="Dashboard" asp-action="monthly">
                     <i class="bi bi-graph-up-arrow"></i> <span>التقارير التحليلية الشهرية</span>
                 </a>
+                <a class="nav-link text-warning" asp-controller="Suppliers" asp-action="Index">
+                    <i class="bi bi-truck"></i> <span>الموردين</span>
+                </a>
             }
         </div>
     </aside>
@@ -177,7 +180,7 @@
 
                 @if (User.IsInRole("Admin"))
                 {
-                    <a asp-controller="User" asp-action="Index" class="btn btn-primary-pos px-2 px-md-4 shadow-sm btn-sm btn-md-base"> 
+                    <a asp-controller="Users" asp-action="Create" class="btn btn-primary-pos px-2 px-md-4 shadow-sm btn-sm btn-md-base"> 
                         <i class="bi bi-person-plus-fill"></i> <span class="d-none d-sm-inline"> اضافة كاشير </span>
                     </a>
                 }

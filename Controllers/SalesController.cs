@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace alnakhil.Controllers
 {
-    [Authorize(Roles = "Admin,Cashier")]
     public class SalesController : Controller
     {
         private readonly alnakhilContext _context;
@@ -23,6 +22,7 @@ namespace alnakhil.Controllers
         }
 
         // ================= INDEX =================
+        [Authorize(Roles = "Admin,Cashier")]
         public async Task<IActionResult> Index()
         {
             var sales = await _context.Sales
@@ -35,6 +35,7 @@ namespace alnakhil.Controllers
         }
 
         // ================= DETAILS =================
+        [Authorize(Roles = "Admin,Cashier")]
         public async Task<IActionResult> Details(int id)
         {
             var sale = await _context.Sales
@@ -49,6 +50,7 @@ namespace alnakhil.Controllers
         }
 
         // ================= CREATE (GET) =================
+        [Authorize(Roles = "Admin,Cashier")]
         public IActionResult Create()
         {
             return View(new SaleVM());
@@ -57,6 +59,7 @@ namespace alnakhil.Controllers
         // ================= CREATE (POST) =================
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Cashier")]
         public async Task<IActionResult> Create(SaleVM vm)
         {
             if (!ModelState.IsValid)
@@ -69,7 +72,7 @@ namespace alnakhil.Controllers
             }
 
             var pricing = await _context.PricingSetting.FirstOrDefaultAsync()
-                          ?? new PricingSetting { TaxPercentage = 15 };
+                          ?? new PricingSetting { TaxPercentage = 0 };
 
             var sale = new Sale
             {
@@ -133,6 +136,7 @@ namespace alnakhil.Controllers
 
         // ================= Suspend =================
         [HttpPost]
+        [Authorize(Roles = "Admin,Cashier")]
         public async Task<IActionResult> Suspend([FromBody] SaleVM vm)
         {
             if (vm == null)
@@ -174,6 +178,7 @@ namespace alnakhil.Controllers
 
 
         // ================= SEARCH PRODUCTS =================
+        [Authorize(Roles = "Admin,Cashier")]
         [HttpGet]
         public async Task<IActionResult> SearchProducts(string query)
         {
@@ -198,6 +203,7 @@ namespace alnakhil.Controllers
         }
 
         // ================= EDIT (GET) =================
+        [Authorize(Roles = "Admin,Cashier")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -236,6 +242,7 @@ namespace alnakhil.Controllers
         }
 
         // ================= EDIT (POST) =================
+        [Authorize(Roles = "Admin,Cashier")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(SaleVM vm)
@@ -276,6 +283,7 @@ namespace alnakhil.Controllers
 
 
             // ================== ❌ حذف منتجات ==================
+
             var removedItems = sale.Items
                 .Where(i => !vmItems.ContainsKey(i.ProductId))
                 .ToList();
@@ -377,6 +385,7 @@ namespace alnakhil.Controllers
         }
 
         // ================= DELETE =================
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)

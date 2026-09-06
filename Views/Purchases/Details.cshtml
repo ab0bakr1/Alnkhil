@@ -75,7 +75,6 @@
                             <th class="border-0 ps-3">الصنف الوارد</th>
                             <th class="border-0 text-center">الكمية</th>
                             <th class="border-0 text-end">سعر الشراء</th>
-                            <th class="border-0 text-end pe-3">الإجمالي</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -88,7 +87,6 @@
                                 </td>
                                 <td class="text-center fw-bold">@item.Quantity</td>
                                 <td class="text-end text-muted">@item.PurchasePrice.ToString("N2") <small>RY</small></td>
-                                <td class="text-end fw-bold pe-3">@((item.Quantity * item.PurchasePrice).ToString("N2")) <small>RY</small></td>
                             </tr>
                         }
                     </tbody>

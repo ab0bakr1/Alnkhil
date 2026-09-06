@@ -3,6 +3,7 @@ using alnakhil.Models;
 using alnakhil.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace alnakhil.Controllers
 {
@@ -16,6 +17,7 @@ namespace alnakhil.Controllers
         }
 
         // ================== INDEX ==================
+        [Authorize(Roles = "Admin,Cashier")]
         public async Task<IActionResult> Index()
         {
             var payables = await _context.Purchases
@@ -49,7 +51,8 @@ namespace alnakhil.Controllers
             return View(model);
         }
 
-
+        // ================== DETAILS ==================
+        [Authorize(Roles = "Admin,Cashier")]
         public async Task<IActionResult> Details(string name, DebtType type)
         {
             var model = new DebtDetailsVM
@@ -108,15 +111,24 @@ namespace alnakhil.Controllers
             return View(model);
         }
 
-
-
+        // ================== PAY ==================
+        [Authorize(Roles = "Admin,Cashier")]
         [HttpPost]
-        public async Task<IActionResult> Pay(int id, decimal amount)
+        public async Task<IActionResult> Pay(int id, decimal amount, DebtType type, string? notes = null)
         {
-            // البحث في المشتريات أولاً
-            var purchase = await _context.Purchases.FindAsync(id);
-            if (purchase != null)
+            if (amount <= 0)
             {
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (type == DebtType.Payable)
+            {
+                var purchase = await _context.Purchases.FindAsync(id);
+                if (purchase == null)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+
                 purchase.AmountPaid += amount;
 
                 if (purchase.AmountPaid >= purchase.TotalAmount)
@@ -124,20 +136,38 @@ namespace alnakhil.Controllers
                 else
                     purchase.PaymentStatus = PaymentStatus.Deferred;
 
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
+                _context.DebtPayments.Add(new DebtPayment
+                {
+                    PurchaseId = purchase.Id,
+                    Amount = amount,
+                    PaymentDate = DateTime.Now,
+                    Notes = notes
+                });
 
-            // البحث في المبيعات
-            var sale = await _context.Sales.FindAsync(id);
-            if (sale != null)
+                await _context.SaveChangesAsync();
+            }
+            else
             {
+                var sale = await _context.Sales.FindAsync(id);
+                if (sale == null)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+
                 sale.AmountPaid += amount;
 
                 if (sale.AmountPaid >= sale.TotalAmount)
                     sale.PaymentStatus = PaymentStatus.Paid;
                 else
                     sale.PaymentStatus = PaymentStatus.Deferred;
+
+                _context.DebtPayments.Add(new DebtPayment
+                {
+                    SaleId = sale.Id,
+                    Amount = amount,
+                    PaymentDate = DateTime.Now,
+                    Notes = notes
+                });
 
                 await _context.SaveChangesAsync();
             }

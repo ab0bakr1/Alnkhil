@@ -4,103 +4,137 @@
     ViewData["Title"] = "إنشاء فاتورة مبيعات";
 }
 
-<div class="container-fluid px-md-4 py-3">
+<div class="container-fluid py-4 px-md-4">
+    <!-- شريط العنوان والاختصارات -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 bg-white p-3 rounded-4 shadow-sm border-start border-primary border-5">
         <div>
             <h3 class="fw-bold text-dark mb-1"><i class="bi bi-cart-plus me-2 text-primary"></i> فاتورة بيع جديدة</h3>
-            <p class="text-muted small mb-0">نظام النخيل Smart - واجهة الكاشير السريع</p>
+            <p class="text-muted small mb-0">تسجيل عمليات البيع الفوري وإدارة حسابات العملاء.</p>
         </div>
-        <div class="d-none d-lg-flex gap-2">
-            <span class="badge bg-light text-dark border p-2"><kbd class="bg-secondary">F2</kbd> بحث</span>
+        <div class="d-none d-lg-flex flex-wrap gap-2">
+            <span class="badge bg-light text-dark border p-2"><kbd class="bg-secondary">F2</kbd> باركود</span>
             <span class="badge bg-light text-dark border p-2"><kbd class="bg-secondary">F4</kbd> تعليق</span>
             <span class="badge bg-light text-dark border p-2"><kbd class="bg-secondary">F9</kbd> حفظ</span>
             <span class="badge bg-light text-dark border p-2"><kbd class="bg-secondary">+</kbd> زيادة</span>
+            <span class="badge bg-light text-dark border p-2"><kbd class="bg-secondary">-</kbd> إنقاص</span>
+            <span class="badge bg-light text-dark border p-2"><kbd class="bg-secondary">Del</kbd> حذف</span>
         </div>
+        <div asp-validation-summary="All" class="text-danger small fw-bold"></div>
     </div>
 
     <form asp-action="Create" method="post" id="posForm">
         @Html.AntiForgeryToken()
-        
-        <div class="row g-3">
-            <div class="col-lg-8">
-                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-                        <h6 class="fw-bold mb-0 text-primary">📦 قائمة المنتجات</h6>
-                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="addRow()">
-                            <i class="bi bi-plus-lg me-1"></i> إضافة صف يدوي
-                        </button>
+
+        <!-- بيانات الفاتورة الأساسية -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">رقم الفاتورة</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-hash"></i></span>
+                            <input class="form-control border-light bg-light fw-bold text-muted" value="تلقائي (S-XXXX)" readonly />
+                        </div>
                     </div>
-                    <div class="table-responsive" style="min-height: 350px;">
-                        <table class="table align-middle table-hover">
-                            <thead class="bg-light text-muted small uppercase">
-                                <tr>
-                                    <th style="width: 25%;">الباركود</th>
-                                    <th style="width: 35%;">اسم المنتج</th>
-                                    <th style="width: 15%;" class="text-center">الكمية</th>
-                                    <th style="width: 15%;" class="text-center">السعر</th>
-                                    <th style="width: 10%;"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="rows">
-                                </tbody>
-                        </table>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">اسم العميل</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-person"></i></span>
+                            <input asp-for="CustomerName" class="form-control border-light bg-light" placeholder="أدخل اسم العميل (نقدي)" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">تاريخ البيع</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-calendar-event"></i></span>
+                            <input type="date" class="form-control border-light bg-light" value="@DateTime.Today.ToString("yyyy-MM-dd")" readonly />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">حالة الفاتورة / طريقة الدفع</label>
+                        <select asp-for="PaymentStatus" class="form-select form-select-sm border-light bg-light fw-bold text-primary">
+                            <option value="Paid">✅ مدفوع (نقداً)</option>
+                            <option value="Deferred">⚠️ آجل (دين)</option>
+                            <option value="Unpaid">❌ غير مدفوع</option>
+                        </select>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm rounded-4 mb-3">
+        <!-- جدول الأصناف -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-box-seam me-2"></i> قائمة المنتجات</h6>
+                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="addRow()">
+                    <i class="bi bi-plus-lg me-1"></i> إضافة صنف جديد
+                </button>
+            </div>
+            <div class="table-responsive" style="min-height: 380px;">
+                <table class="table align-middle" style="table-layout: fixed;">
+                    <thead class="bg-light">
+                        <tr class="small text-muted text-uppercase">
+                            <th style="width: 32%;" class="ps-4">المنتج / البحث</th>
+                            <th style="width: 20%;">الباركود</th>
+                            <th style="width: 12%;" class="text-center">الكمية</th>
+                            <th style="width: 15%;" class="text-center text-success">سعر الوحدة</th>
+                            <th style="width: 16%;" class="text-center text-primary">المجموع</th>
+                            <th style="width: 5%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="rows">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ملخص الحسابات والإجمالي -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
                     <div class="card-body p-4">
-                        <h6 class="fw-bold mb-4 border-bottom pb-2">👤 بيانات العميل والدفع</h6>
+                        <h6 class="fw-bold mb-3 small text-dark"><i class="bi bi-calculator me-1"></i> الضرائب والخصومات</h6>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small text-muted">المجموع الفرعي</label>
+                                <div class="input-group input-group-sm">
+                                    <input id="subtotal" class="form-control border-light bg-light fw-bold" readonly value="0.00" />
+                                    <span class="input-group-text bg-light border-0 small">RY</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small text-muted">الضريبة (0%)</label>
+                                <div class="input-group input-group-sm">
+                                    <input id="taxAmount" class="form-control border-light bg-light text-success fw-bold" readonly value="0.00" />
+                                    <span class="input-group-text bg-light border-0 small text-success">RY</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small text-muted">مبلغ الخصم</label>
+                                <div class="input-group input-group-sm">
+                                    <input asp-for="DiscountAmount" class="form-control border-light bg-light text-danger fw-bold" type="number" step="0.01" value="0" oninput="calculateTotals()" />
+                                    <span class="input-group-text bg-light border-0 small text-danger">RY</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 bg-primary text-white h-100">
+                    <div class="card-body p-4 d-flex flex-column justify-content-center text-center">
+                        <span class="opacity-75 small text-uppercase fw-bold mb-2">إجمالي مبلغ الفاتورة</span>
+                        <h2 class="fw-bold mb-3" id="totalAmount">0.00 <small style="font-size: 14px">RY</small></h2>
                         
-                        <div class="mb-3">
-                            <label asp-for="CustomerName" class="form-label small fw-bold">اسم العميل</label>
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text bg-white"><i class="bi bi-person text-muted"></i></span>
-                                <input asp-for="CustomerName" class="form-control" placeholder="اختياري (عميل نقدي)" />
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label asp-for="PaymentStatus" class="form-label small fw-bold">طريقة الدفع</label>
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text bg-white"><i class="bi bi-wallet2 text-muted"></i></span>
-                                <select asp-for="PaymentStatus" class="form-select fw-bold text-primary">
-                                    <option value="1">✅ مدفوع (نقداً)</option>
-                                    <option value="0">⚠️ آجل (دين)</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="bg-light rounded-4 p-3 mb-4">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="text-muted small">المجموع الفرعي:</span>
-                                <input id="subtotal" class="form-control-plaintext text-end fw-bold py-0" style="width: 100px;" readonly value="0.00" />
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="text-muted small">الضريبة (15%):</span>
-                                <input id="taxAmount" class="form-control-plaintext text-end fw-bold py-0 text-success" style="width: 100px;" readonly value="0.00" />
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="text-muted small">مبلغ الخصم:</span>
-                                <input asp-for="DiscountAmount" class="form-control form-control-sm text-end border-danger text-danger fw-bold" style="width: 100px;" type="number" step="0.01" value="0" />
-                            </div>
-                            <hr class="my-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="fw-bold mb-0">الإجمالي:</h5>
-                                <input id="totalAmount" class="form-control-plaintext text-end fw-bold text-primary fs-4 py-0" style="width: 140px;" readonly value="0.00" />
-                            </div>
-                        </div>
-
                         <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-primary-pos py-3 shadow-sm fw-bold" onclick="submitSale()">
-                                <i class="bi bi-check2-circle me-2"></i> إتمام البيع (F9)
+                            <button type="button" class="btn btn-light fw-bold py-2 shadow-sm text-primary" onclick="submitSale()">
+                                <i class="bi bi-cloud-check me-2"></i> حفظ الفاتورة (F9)
                             </button>
-                            <button type="button" class="btn btn-outline-warning py-2 border-dashed" onclick="suspendSale()">
+                            <button type="button" class="btn btn-outline-light btn-sm border-0 opacity-75" onclick="suspendSale()">
                                 <i class="bi bi-pause-fill me-1"></i> تعليق الفاتورة (F4)
                             </button>
-                            <a asp-action="Index" class="btn btn-link text-muted btn-sm mt-2 text-decoration-none">
-                                <i class="bi bi-x-circle me-1"></i> إلغاء ورجوع
+                            <a asp-action="Index" class="btn btn-outline-light btn-sm border-0 opacity-75">
+                                <i class="bi bi-x-circle me-1"></i> إلغاء والرجوع
                             </a>
                         </div>
                     </div>
@@ -111,89 +145,111 @@
 </div>
 
 <style>
-    .table-active { background-color: rgba(0, 184, 148, 0.08) !important; border-right: 4px solid var(--primary-color) !important; }
-    
-    .barcode-input, .product-name-input { border: 1px solid transparent !important; background-color: #f8f9fa !important; border-radius: 8px !important; }
-    .barcode-input:focus, .product-name-input:focus { background-color: #fff !important; border-color: var(--primary-color) !important; box-shadow: none !important; }
+    .bg-light { background-color: #f8f9fa !important; }
+    .form-control:focus, .form-select:focus { box-shadow: none; border-color: #0d6efd !important; }
 
-    .btn-primary-pos { background-color: #00b894; color: white; border: none; transition: 0.3s; }
-    .btn-primary-pos:hover { background-color: #00a383; transform: scale(1.02); }
+    .table thead th { font-weight: 600; padding: 12px 8px; }
+    .table tbody td { padding: 12px 8px; }
 
-    .border-dashed { border-style: dashed !important; }
-    
-    .unit-price-display { color: var(--primary-color); font-size: 0.95rem; }
-
-    /* تحسين شكل نتائج البحث */
-    .search-results {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 0 0 12px 12px;
-        max-height: 250px;
-        overflow-y: auto;
-        z-index: 1050;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    .table-active {
+        background-color: rgba(13, 110, 253, 0.08) !important;
+        border-right: 4px solid #0d6efd !important;
     }
-    .search-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f1f1f1; transition: 0.2s; }
-    .search-item:hover { background-color: #f8f9fa; color: #00b894; padding-right: 20px; }
 
-    kbd { padding: 2px 4px; font-size: 0.75rem; border-radius: 4px; }
+    .suggestions {
+        z-index: 1050;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+        border: none;
+        border-radius: 8px;
+        overflow: hidden;
+        max-height: 260px;
+        overflow-y: auto;
+    }
+
+    .list-group-item-action:hover {
+        background-color: #f0f7ff;
+        color: #0d6efd;
+    }
+
+    kbd {
+        padding: 2px 5px;
+        font-size: 0.75rem;
+        border-radius: 4px;
+    }
 </style>
 
 @section Scripts {
 <script>
     let activeRow = null;
-/* ================== ADD ROW ================== */
-function addRow() {
-    const index = document.querySelectorAll("#rows tr").length;
+    let itemIndex = 0;
 
-    const row = `
-    <tr>
-        <td style="position:relative">
-            <input type="text"
-                   class="form-control barcode-input"
-                   placeholder="📦 باركود"
-                   autofocus />
-        </td>
+    /* ================== ADD ROW ================== */
+    function addRow() {
+        const row = `
+        <tr onclick="setActiveRow(this)">
+            <td style="position:relative">
+                <input type="text"
+                       class="form-control product-name-input"
+                       placeholder="اسم المنتج أو البحث..."
+                       autocomplete="off" />
 
-        <td style="position:relative">
-            <input type="text"
-                   class="form-control product-name-input"
-                   placeholder="🔍 اسم المنتج" />
+                <input type="hidden" name="Items[${itemIndex}].ProductId" class="product-id" />
+                <input type="hidden" name="Items[${itemIndex}].UnitPrice" class="product-unit-price" value="0" />
 
-            <input type="hidden" name="Items[${index}].ProductId" />
-            <input type="hidden" name="Items[${index}].UnitPrice" value="0" />
+                <div class="list-group position-absolute w-100 d-none suggestions"></div>
+            </td>
 
-            <div class="search-results d-none"></div>
-        </td>
+            <td>
+                <input type="text"
+                       name="Items[${itemIndex}].ProductBarcode"
+                       class="form-control barcode-input"
+                       placeholder="الباركود أو بالماسح"
+                       autocomplete="off" />
+            </td>
 
-        <td>
-            <input type="number"
-                   name="Items[${index}].Quantity"
-                   class="form-control quantity-input"
-                   min="1"
-                   value="1" />
-        </td>
+            <td>
+                <input type="number"
+                       name="Items[${itemIndex}].Quantity"
+                       class="form-control quantity-input text-center"
+                       min="1"
+                       value="1" />
+            </td>
 
-        <td>
-            <span class="unit-price-display fw-bold"></span>
-        </td>
+            <td>
+                <input type="text"
+                       class="form-control unit-price-display bg-light text-success fw-bold text-center"
+                       readonly
+                       placeholder="0.00" />
+            </td>
 
-        <td>
-            <button type="button"
-                    class="btn btn-danger btn-sm"
-                    onclick="removeRow(this)">✖</button>
-        </td>
-    </tr>`;
+            <td>
+                <input type="text"
+                       class="form-control line-total-display bg-light text-primary fw-bold text-center"
+                       readonly
+                       placeholder="0.00" />
+            </td>
 
-    document.getElementById("rows").insertAdjacentHTML("beforeend", row);
+            <td class="text-center">
+                <button type="button"
+                        class="btn btn-danger btn-sm"
+                        onclick="removeRow(this)">✖</button>
+            </td>
+        </tr>`;
 
-    const newRow = document.querySelector("#rows tr:last-child");
-    setActiveRow(newRow);
+        document.getElementById("rows").insertAdjacentHTML("beforeend", row);
+        itemIndex++;
 
+        const newRow = document.querySelector("#rows tr:last-child");
+        setActiveRow(newRow);
+
+        bindRowEvents(newRow);
+        calculateTotals();
+
+        // التركيز على الباركود للصف الجديد
+        newRow.querySelector(".barcode-input")?.focus();
+    }
+
+    /* ================== ACTIVE ROW ================== */
     function setActiveRow(row) {
         document.querySelectorAll("#rows tr").forEach(r => r.classList.remove("table-active"));
         if (!row) return;
@@ -201,335 +257,342 @@ function addRow() {
         activeRow = row;
     }
 
-    document.addEventListener("click", function (e) {
-        const row = e.target.closest("#rows tr");
-        if (row) setActiveRow(row);
-    });
-
-    bindEvents();
-    calculateTotals();
-}
-
-document.addEventListener("keydown", function (e) {
-
-    if (!activeRow) return;
-
-    const qtyInput = activeRow.querySelector(".quantity-input");
-
-    switch (e.key) {
-
-        case "+":
+    /* ================== KEYBOARD SHORTCUTS ================== */
+    document.addEventListener("keydown", function (e) {
+        // إذا كان الفوكس على حقل نصي والزر F2 أو F4 أو F9 لا نمنعه
+        if (e.key === "F2") {
             e.preventDefault();
-            qtyInput.value = parseInt(qtyInput.value) + 1;
-            calculateTotals();
-            break;
+            const lastRow = document.querySelector("#rows tr:last-child");
+            if (lastRow) {
+                setActiveRow(lastRow);
+                lastRow.querySelector(".barcode-input")?.focus();
+            } else {
+                addRow();
+            }
+            return;
+        }
 
-        case "-":
+        if (e.key === "F4") {
             e.preventDefault();
-            if (qtyInput.value > 1) {
-                qtyInput.value = parseInt(qtyInput.value) - 1;
+            suspendSale();
+            return;
+        }
+
+        if (e.key === "F9") {
+            e.preventDefault();
+            submitSale();
+            return;
+        }
+
+        if (!activeRow) return;
+
+        // اختصارات تعديل الكمية وحذف الصف
+        const isEditingInput = ["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement.tagName);
+        const qtyInput = activeRow.querySelector(".quantity-input");
+
+        if (e.key === "+") {
+            if (!isEditingInput || document.activeElement === qtyInput) {
+                e.preventDefault();
+                qtyInput.value = (parseInt(qtyInput.value) || 0) + 1;
                 calculateTotals();
             }
-            break;
-
-        case "Delete":
-            e.preventDefault();
-            activeRow.remove();
-            activeRow = null;
-            calculateTotals();
-            break;
-
-        case "Escape":
+        } else if (e.key === "-") {
+            if (!isEditingInput || document.activeElement === qtyInput) {
+                e.preventDefault();
+                const cur = parseInt(qtyInput.value) || 1;
+                if (cur > 1) {
+                    qtyInput.value = cur - 1;
+                    calculateTotals();
+                }
+            }
+        } else if (e.key === "Delete") {
+            if (!isEditingInput) {
+                e.preventDefault();
+                activeRow.remove();
+                activeRow = document.querySelector("#rows tr:last-child");
+                if (activeRow) setActiveRow(activeRow);
+                calculateTotals();
+            }
+        } else if (e.key === "Escape") {
             e.preventDefault();
             qtyInput.value = 1;
             calculateTotals();
-            break;
-
-        case "F2":
-            e.preventDefault();
-            document.querySelector(".barcode-input:last-of-type")?.focus();
-            break;
-
-        case "F9":
-            e.preventDefault();
-            document.querySelector("form").submit();
-            break;
-
-        case "F4":
-            e.preventDefault();
-            suspendSale();
-            break;
-    }
-});
-
-/* ================== BIND EVENTS ================== */
-function bindEvents() {
-    bindBarcodeEvents();
-    bindNameSearchEvents();
-    bindQuantityEvents();
-}
-
-/* ================== BARCODE SEARCH ================== */
-function bindBarcodeEvents() {
-    document.querySelectorAll(".barcode-input").forEach(input => {
-        if (input.dataset.bound) return;
-        input.dataset.bound = "1";
-
-        input.addEventListener("keydown", function () {
-            const barcode = this.value.trim();
-            if (!barcode) return;
-
-            fetch(`/Sales/SearchProducts?query=${barcode}`)
-                .then(r => r.json())
-                .then(products => {
-                    if (products.length === 1) {
-                        fillRow(this.closest("tr"), products[0]);
-                    }
-                });
-        });
+        }
     });
-}
 
-/* ================== NAME SEARCH ================== */
-function bindNameSearchEvents() {
-    document.querySelectorAll(".product-name-input").forEach(input => {
-        if (input.dataset.bound) return;
-        input.dataset.bound = "1";
+    /* ================== BIND ROW EVENTS ================== */
+    function bindRowEvents(row) {
+        const barcodeInput = row.querySelector(".barcode-input");
+        const nameInput = row.querySelector(".product-name-input");
+        const qtyInput = row.querySelector(".quantity-input");
+        const suggestions = row.querySelector(".suggestions");
 
-        input.addEventListener("input", function () {
+        // باركود (قارئ باركود أو ضغط Enter)
+        barcodeInput.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                const code = this.value.trim();
+                if (!code) return;
+
+                fetch(`/Sales/SearchProducts?query=${encodeURIComponent(code)}`)
+                    .then(r => r.json())
+                    .then(products => {
+                        if (products && products.length > 0) {
+                            fillRow(row, products[0]);
+                        }
+                    });
+            }
+        });
+
+        // بحث بالاسم مع نافذة الاقتراحات
+        nameInput.addEventListener("input", function () {
             const query = this.value.trim();
-            const results = this.closest("td").querySelector(".search-results");
 
             if (query.length < 2) {
-                results.classList.add("d-none");
+                suggestions.innerHTML = "";
+                suggestions.classList.add("d-none");
                 return;
             }
 
-            fetch(`/Sales/SearchProducts?query=${query}`)
+            fetch(`/Sales/SearchProducts?query=${encodeURIComponent(query)}`)
                 .then(r => r.json())
                 .then(products => {
-                    results.innerHTML = products.map(p => `
-                        <div class="search-item"
-                             data-product='${JSON.stringify(p)}'>
-                            ${p.name} (${p.barcode})
-                        </div>
-                    `).join("");
-                    results.classList.remove("d-none");
+                    suggestions.innerHTML = "";
+                    if (!products || products.length === 0) {
+                        suggestions.classList.add("d-none");
+                        return;
+                    }
+
+                    suggestions.classList.remove("d-none");
+                    products.forEach(p => {
+                        const btn = document.createElement("button");
+                        btn.type = "button";
+                        btn.className = "list-group-item list-group-item-action d-flex justify-content-between align-items-center";
+                        btn.innerHTML = `
+                            <div>
+                                <span class="fw-bold text-dark">${p.name}</span>
+                                <small class="text-muted d-block">${p.barcode || 'بدون باركود'}</small>
+                            </div>
+                            <span class="badge bg-light text-primary border">${p.salePrice.toFixed(2)} RY</span>
+                        `;
+                        btn.onclick = (ev) => {
+                            ev.preventDefault();
+                            fillRow(row, p);
+                        };
+                        suggestions.appendChild(btn);
+                    });
                 });
         });
-    });
-}
 
-/* ================== SELECT PRODUCT ================== */
-document.addEventListener("mousedown", function (e) {
-    const item = e.target.closest(".search-item");
-    if (!item) return;
+        // إغلاق الاقتراحات عند النقر خارجها
+        document.addEventListener("click", function (e) {
+            if (!row.contains(e.target)) {
+                suggestions.classList.add("d-none");
+            }
+        });
 
-    e.preventDefault();
+        // تغيير الكمية
+        qtyInput.addEventListener("input", calculateTotals);
+    }
 
-    const product = JSON.parse(item.dataset.product);
-    const row = item.closest("tr");
+    /* ================== FILL ROW ================== */
+    function fillRow(row, product) {
+        // التحقق من تكرار الصنف
+        const existingRow = findExistingRow(product.id);
+        if (existingRow && existingRow !== row) {
+            const qty = existingRow.querySelector(".quantity-input");
+            qty.value = (parseInt(qty.value) || 0) + 1;
+            row.remove();
+            setActiveRow(existingRow);
+            calculateTotals();
+            return;
+        }
 
-    fillRow(row, product);
-});
+        row.querySelector(".product-name-input").value = product.name;
+        row.querySelector(".barcode-input").value = product.barcode || "";
+        row.querySelector(".product-id").value = product.id;
+        row.querySelector(".product-unit-price").value = product.salePrice;
 
-/* ================== FILL ROW ================== */
-function fillRow(row, product) {
-
-    // 🔁 هل المنتج موجود مسبقًا؟
-    const existingRow = findExistingRow(product.id);
-
-    if (existingRow && existingRow !== row) {
-        const qtyInput = existingRow.querySelector(".quantity-input");
-        qtyInput.value = parseInt(qtyInput.value) + 1;
-
-        // حذف الصف الجديد
-        row.remove();
+        row.querySelector(".unit-price-display").value = product.salePrice.toFixed(2);
+        row.querySelector(".suggestions").classList.add("d-none");
 
         calculateTotals();
-        return;
+
+        // إضافة صف جديد تلقائياً وتفعيل التركيز للكاشير السريع
+        addRow();
     }
 
-    // ⬇️ تعبئة الصف (أول مرة)
-    row.querySelector(".barcode-input").value = product.barcode;
-    row.querySelector(".product-name-input").value = product.name;
-
-    row.querySelector('input[name*="ProductId"]').value = product.id;
-    row.querySelector('input[name*="UnitPrice"]').value = product.salePrice;
-
-    row.querySelector(".unit-price-display").textContent =
-        product.salePrice.toLocaleString("ar-SA");
-
-    row.querySelector(".search-results").classList.add("d-none");
-
-    calculateTotals();
-
-    // 🎯 فوكس تلقائي على الباركود للصف الجديد
-    addRow();
-}
-
-/* ================== SUSPEND SALE ================== */
-function suspendSale() {
-
-    const data = {
-        customerName: document.querySelector('[name="CustomerName"]').value,
-        paymentStatus: parseInt(document.querySelector('[name="PaymentStatus"]').value),
-        discountAmount: parseFloat(document.querySelector('[name="DiscountAmount"]').value),
-        items: []
-    };
-
-
-    document.querySelectorAll("#rows tr").forEach(row => {
-        const productId = row.querySelector('input[name*="ProductId"]').value;
-        const qty = row.querySelector(".quantity-input").value;
-        const price = row.querySelector('input[name*="UnitPrice"]').value;
-
-        if (productId) {
-            data.items.push({
-                productId: parseInt(productId),
-                quantity: parseInt(qty),
-                unitPrice: parseFloat(price)
-            });
-        }
-    });
-
-    fetch("/Sales/Suspend", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value
-        },
-        body: JSON.stringify(data)
-    })
-    .then(r => r.json())
-    .then(res => {
-        if (res.success) {
-            alert("✅ تم تعليق الفاتورة");
-            location.reload();
-        }
-    });
-}
-
-/* ================== FIND EXISTING ROW ================== */
-function findExistingRow(productId) {
-    let foundRow = null;
-
-    document.querySelectorAll("#rows tr").forEach(row => {
-        const pidInput = row.querySelector('input[name*="ProductId"]');
-        if (pidInput && pidInput.value == productId) {
-            foundRow = row;
-        }
-    });
-
-    return foundRow;
-}
-
-/* ================== QUANTITY ================== */
-function bindQuantityEvents() {
-    document.querySelectorAll(".quantity-input").forEach(input => {
-        if (input.dataset.bound) return;
-        input.dataset.bound = "1";
-
-        input.addEventListener("input", calculateTotals);
-    });
-}
-
-/* ================== TOTALS ================== */
-function calculateTotals() {
-    let subtotal = 0;
-
-    document.querySelectorAll("#rows tr").forEach(row => {
-        const qty = parseFloat(row.querySelector(".quantity-input")?.value || 0);
-        const price = parseFloat(row.querySelector('input[name*="UnitPrice"]')?.value || 0);
-        subtotal += qty * price;
-    });
-
-    const taxRate = 15;
-    const taxAmount = subtotal * (taxRate / 100);
-    const discount = parseFloat(document.querySelector('[name="DiscountAmount"]')?.value || 0);
-    const total = subtotal + taxAmount - discount;
-
-    document.getElementById("subtotal").value = subtotal.toFixed(2);
-    document.getElementById("taxAmount").value = taxAmount.toFixed(2);
-    document.getElementById("totalAmount").value = total.toFixed(2);
-}
-
-/* ================== REMOVE ROW ================== */
-function removeRow(btn) {
-    btn.closest("tr").remove();
-    calculateTotals();
-}
-
-/* ================== INIT ================== */
-document.addEventListener("DOMContentLoaded", function () {
-    addRow();
-
-    document.querySelector('[name="DiscountAmount"]')
-        .addEventListener("input", calculateTotals);
-});
-/* ================== SUBMIT SALE ================== */
-function submitSale() {
-    const items = [];
-    // نمر على كل الصفوف في الجدول
-    document.querySelectorAll("#rows tr").forEach((row) => {
-        const productId = row.querySelector('input[name*="ProductId"]')?.value;
-        const qty = row.querySelector(".quantity-input")?.value;
-        const price = row.querySelector('input[name*="UnitPrice"]')?.value;
-
-        // نتأكد أن الصف يحتوي على منتج حقيقي (Id ليس فارغاً وليس صفر)
-        if (productId && productId != "0" && productId != "") {
-            items.push({
-                ProductId: parseInt(productId),
-                Quantity: parseInt(qty),
-                UnitPrice: parseFloat(price)
-            });
-        }
-    });
-
-    if (items.length === 0) {
-        alert("⚠️ يرجى إضافة منتج واحد على الأقل قبل الحفظ");
-        return;
+    /* ================== FIND EXISTING ROW ================== */
+    function findExistingRow(productId) {
+        let found = null;
+        document.querySelectorAll("#rows tr").forEach(row => {
+            const pid = row.querySelector(".product-id");
+            if (pid && pid.value == productId) {
+                found = row;
+            }
+        });
+        return found;
     }
 
-    const formData = new FormData();
-    formData.append("CustomerName", document.querySelector('[name="CustomerName"]').value);
-    formData.append("PaymentStatus", document.querySelector('[name="PaymentStatus"]').value);
-    formData.append("DiscountAmount", document.querySelector('[name="DiscountAmount"]').value);
-    
-    // إرسال المصفوفة بترقيم سليم 0, 1, 2...
-    items.forEach((item, i) => {
-        formData.append(`Items[${i}].ProductId`, item.ProductId);
-        formData.append(`Items[${i}].Quantity`, item.Quantity);
-        formData.append(`Items[${i}].UnitPrice`, item.UnitPrice);
-        // لا نرسل ProductName هنا لأنه غير مطلوب للحفظ
-    });
+    /* ================== REMOVE ROW ================== */
+    function removeRow(btn) {
+        const row = btn.closest("tr");
+        row.remove();
+        activeRow = document.querySelector("#rows tr:last-child");
+        if (activeRow) setActiveRow(activeRow);
+        calculateTotals();
+    }
 
-    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+    /* ================== CALCULATE TOTALS ================== */
+    function calculateTotals() {
+        let subtotal = 0;
 
-    // تعطيل الزر لمنع التكرار
-    const submitBtn = document.querySelector('button[onclick="submitSale()"]');
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = "⌛ جاري الحفظ...";
+        document.querySelectorAll("#rows tr").forEach(row => {
+            const qty = parseFloat(row.querySelector(".quantity-input")?.value) || 0;
+            const price = parseFloat(row.querySelector(".product-unit-price")?.value) || 0;
+            const lineTotal = qty * price;
 
-    fetch("/Sales/Create", {
-        method: "POST",
-        headers: { "RequestVerificationToken": token },
-        body: formData
-    }).then(r => {
-        if (r.redirected) {
-            window.location.href = r.url; // نجاح -> انتقال لصفحة الفواتير
-        } else {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = "💰 إتمام البيع (F9)";
-            return r.text().then(text => { 
-                alert("فشل الحفظ: " + text); // سيظهر لك هنا تفاصيل الخطأ إذا استمر
-            });
+            const lineTotalDisplay = row.querySelector(".line-total-display");
+            if (lineTotalDisplay) {
+                lineTotalDisplay.value = lineTotal.toFixed(2);
+            }
+
+            subtotal += lineTotal;
+        });
+
+        const taxRate = 0; // نسبة الضريبة 0%
+        const taxAmount = subtotal * (taxRate / 100);
+        const discountAmount = parseFloat(document.querySelector('[name="DiscountAmount"]')?.value) || 0;
+        const total = subtotal + taxAmount - discountAmount;
+
+        document.getElementById("subtotal").value = subtotal.toFixed(2);
+        document.getElementById("taxAmount").value = taxAmount.toFixed(2);
+        document.getElementById("totalAmount").innerHTML = `${total.toFixed(2)} <small style="font-size: 14px">RY</small>`;
+    }
+
+    /* ================== SUBMIT SALE ================== */
+    function submitSale() {
+        const items = [];
+        document.querySelectorAll("#rows tr").forEach(row => {
+            const productId = row.querySelector(".product-id")?.value;
+            const qty = row.querySelector(".quantity-input")?.value;
+            const price = row.querySelector(".product-unit-price")?.value;
+
+            if (productId && productId !== "0" && productId !== "") {
+                items.push({
+                    ProductId: parseInt(productId),
+                    Quantity: parseInt(qty) || 1,
+                    UnitPrice: parseFloat(price) || 0
+                });
+            }
+        });
+
+        if (items.length === 0) {
+            alert("⚠️ يرجى إضافة منتج واحد على الأقل قبل الحفظ");
+            return;
         }
-    }).catch(err => {
-        alert("خطأ في الاتصال بالسيرفر");
-        submitBtn.disabled = false;
-    });
-}
 
+        const formData = new FormData();
+        formData.append("CustomerName", document.querySelector('[name="CustomerName"]').value || "");
+        formData.append("PaymentStatus", document.querySelector('[name="PaymentStatus"]').value);
+        formData.append("DiscountAmount", document.querySelector('[name="DiscountAmount"]').value || "0");
+
+        items.forEach((item, i) => {
+            formData.append(`Items[${i}].ProductId`, item.ProductId);
+            formData.append(`Items[${i}].Quantity`, item.Quantity);
+            formData.append(`Items[${i}].UnitPrice`, item.UnitPrice);
+        });
+
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || "";
+
+        const submitBtn = document.querySelector('button[onclick="submitSale()"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> جاري الحفظ...';
+        }
+
+        fetch("/Sales/Create", {
+            method: "POST",
+            headers: { "RequestVerificationToken": token },
+            body: formData
+        }).then(r => {
+            if (r.redirected) {
+                window.location.href = r.url;
+            } else {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="bi bi-cloud-check me-2"></i> حفظ الفاتورة (F9)';
+                }
+                return r.text().then(text => {
+                    alert("فشل الحفظ: " + text);
+                });
+            }
+        }).catch(err => {
+            alert("حدث خطأ أثناء الاتصال بالسيرفر");
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-cloud-check me-2"></i> حفظ الفاتورة (F9)';
+            }
+        });
+    }
+
+    /* ================== SUSPEND SALE ================== */
+    function suspendSale() {
+        const items = [];
+        document.querySelectorAll("#rows tr").forEach(row => {
+            const productId = row.querySelector(".product-id")?.value;
+            const qty = row.querySelector(".quantity-input")?.value;
+            const price = row.querySelector(".product-unit-price")?.value;
+
+            if (productId && productId !== "0" && productId !== "") {
+                items.push({
+                    productId: parseInt(productId),
+                    quantity: parseInt(qty) || 1,
+                    unitPrice: parseFloat(price) || 0
+                });
+            }
+        });
+
+        if (items.length === 0) {
+            alert("⚠️ لا توجد أصناف لتعليقها");
+            return;
+        }
+
+        const paymentStatusVal = document.querySelector('[name="PaymentStatus"]').value;
+        const data = {
+            customerName: document.querySelector('[name="CustomerName"]').value || "",
+            paymentStatus: paymentStatusVal === "Deferred" ? 2 : 1,
+            discountAmount: parseFloat(document.querySelector('[name="DiscountAmount"]').value) || 0,
+            items: items
+        };
+
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || "";
+
+        fetch("/Sales/Suspend", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "RequestVerificationToken": token
+            },
+            body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                alert("✅ تم تعليق الفاتورة بنجاح");
+                location.reload();
+            } else {
+                alert("حدث خطأ أثناء تعليق الفاتورة");
+            }
+        })
+        .catch(err => {
+            alert("حدث خطأ أثناء الاتصال بالسيرفر");
+        });
+    }
+
+    /* ================== INIT ================== */
+    document.addEventListener("DOMContentLoaded", function () {
+        addRow();
+    });
 </script>
-} 
+}

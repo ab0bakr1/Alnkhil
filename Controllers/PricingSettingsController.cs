@@ -24,21 +24,27 @@ public class PricingSettingsController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Update(decimal profitPercentage)
+    public async Task<IActionResult> Update(decimal profitPercentage, decimal taxPercentage)
     {
         var settings = await _context.PricingSetting.FirstOrDefaultAsync();
 
         if (settings == null)
         {
-            settings = new PricingSetting { ProfitPercentage = profitPercentage };
+            settings = new PricingSetting
+            {
+                ProfitPercentage = profitPercentage,
+                TaxPercentage = taxPercentage
+            };
             _context.PricingSetting.Add(settings);
         }
         else
         {
             settings.ProfitPercentage = profitPercentage;
+            settings.TaxPercentage = taxPercentage;
         }
 
         await _context.SaveChangesAsync();
+        TempData["Success"] = "تم حفظ إعدادات التسعير بنجاح";
         return RedirectToAction(nameof(Index));
     }
 }

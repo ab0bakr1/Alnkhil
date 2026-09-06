@@ -43,11 +43,13 @@ namespace alnakhil.Services
                 // ✅ تحديث الكمية
                 product.Quantity += item.Quantity;
 
-                // ✅ سعر الوحدة
-                var unitPrice = item.PurchasePrice / item.Quantity;
+                // ✅ سعر الوحدة الواحدة (PurchasePrice = سعر الكرتون ÷ الكمية)
+                var unitPrice = item.Quantity > 0
+                    ? item.PurchasePrice / item.Quantity
+                    : item.PurchasePrice;
 
-                // ✅ تحديث سعر الشراء
-                product.PurchasePrice = item.PurchasePrice;
+                // ✅ تحديث سعر الشراء للوحدة في جدول المنتجات
+                product.PurchasePrice = unitPrice;
 
                 // ✅ تحديث تاريخ الانتهاء
                 product.ExpirationDate = item.ExpiryDate;
