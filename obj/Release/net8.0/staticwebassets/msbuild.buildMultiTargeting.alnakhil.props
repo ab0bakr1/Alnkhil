@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\alnakhil.props" />
-</Project>
