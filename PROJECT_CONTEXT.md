@@ -1,117 +1,109 @@
 # PROJECT_CONTEXT.md — النخيل Smart POS
-> توثيق شامل للمشروع — مُعدّ للقراءة من قِبل أي نموذج ذكاء اصطناعي أو مطور جديد.
+> توثيق شامل ومُحدّث للمشروع — مُعدّ للقراءة من قِبل أي نموذج ذكاء اصطناعي أو مطور جديد.
 
 ---
 
 ## 1. نظرة عامة
 
 ### ما هو المشروع؟
-**النخيل Smart POS** هو نظام نقطة بيع (Point of Sale) لإدارة سوبر ماركت. يغطّي دورة العمل الكاملة من الشراء من الموردين → إدارة المخزون → البيع للعملاء → تتبع الديون → التقارير والإحصاءات.
+**النخيل Smart POS** هو نظام نقطة بيع (Point of Sale) وإدارة سوبر ماركت متكامل. يغطّي دورة العمل الكاملة:
+الشراء وإدارة الموردين ← إدارة المخزون والتسعير ← البيع للعملاء وإدارة الكاشير ← تتبع الديون (عملاء وموردين) ودفوعاتها ← التقارير والإحصاءات التحليلية.
 
 ### من هم المستخدمون؟
-- **Admin (مدير):** صلاحيات كاملة — إدارة المنتجات والمستخدمين والتقارير والإعدادات والمشتريات.
-- **Cashier (كاشير):** صلاحيات محدودة — إنشاء فواتير البيع فقط.
+- **Admin (مدير):** صلاحيات كاملة — إدارة المنتجات، التصنيفات، الموردين، المستخدمين والكاشيرين، سجل المخزون، إعدادات التسعير، فواتير الشراء، حذف فواتير البيع، والتقارير التحليلية المتقدمة.
+- **Cashier (كاشير):** صلاحيات تشغيلية — إنشاء وتعديل فواتير البيع، الفواتير المعلقة، البحث عن المنتجات، عرض الديون وتسجيل السدادات، وعرض قائمة المشتريات. (تم منع حذف فواتير البيع أو تعديل/حذف فواتير الشراء للموظفين العاديين).
 
 ### نوع المشروع
-نظام ERP/POS داخلي (Internal Business Tool) — ليس SaaS عام، لكل متجر نسخته الخاصة مع قاعدة بيانات خاصة.
+نظام ERP/POS داخلي (Internal Business Tool) مبني على ASP.NET Core 8.0 MVC مع واجهات Razor مخصصة، قابل للنشر السحابي أو الاستخدام المحلي.
 
 ### حالة المشروع
-**في التطوير الفعلي / يُستخدم محلياً** — المشروع يعمل ويُستخدم، والميزات الأساسية مكتملة. لا يوجد CI/CD أو نشر سحابي حتى الآن. آخر migration في فبراير 2026.
+**الإصدار الحالي: V 2.1 (سبتمبر 2026)**
+- تم تطبيق تحسينات جذرية في إصداري V 2.0 و V 2.1 (إضافة إدارة كاملة للموردين، ربط جدول تسجيل الدفعات `DebtPayments`، دعم تعديل الضريبة والربح، إصلاح تتبع المخزون عند تعديل المشتريات، ضبط الصلاحيات، وإضافة إعدادات الإنتاج `appsettings.Production.json`).
+- تم تجهيز قاعدة بيانات إنتاجية على استضافة سحابية (`site4now.net`).
 
 ---
 
 ## 2. Tech Stack
 
 ### اللغات والـ Frameworks
-| الطبقة | التقنية |
-|--------|---------|
-| **Backend** | ASP.NET Core 8.0 (MVC Pattern) |
-| **Frontend** | Razor Views (.cshtml) + Vanilla JS + Bootstrap 5 RTL |
-| **Database** | SQL Server (via Entity Framework Core 8.0) |
-| **Auth** | ASP.NET Core Identity |
-| **Language** | C# (.NET 8) |
+| الطبقة | التقنية | التفاصيل |
+|--------|---------|----------|
+| **Backend** | ASP.NET Core 8.0 (MVC) | C# (.NET 8.0) |
+| **Frontend** | Razor Views (.cshtml) + Vanilla JS + Bootstrap 5 RTL | واجهات عربية تفاعلية بالكامل |
+| **Database** | SQL Server via Entity Framework Core 8.0 | Code-First مع Migrations |
+| **Auth** | ASP.NET Core Identity | إدارة المستخدمين والأدوار (Admin / Cashier) |
+| **Culture** | `en-US` | مثبتة في `Program.cs` لضمان صحة الأرقام العشرية (Decimal Parsing) |
 
-### المكتبات الأساسية
-| المكتبة | الإصدار | السبب |
+### المكتبات الأساسية (NuGet Packages)
+| المكتبة | الإصدار | الغرض |
 |---------|---------|-------|
-| `Microsoft.AspNetCore.Identity.EntityFrameworkCore` | 8.0.0 | نظام المصادقة والأدوار |
-| `Microsoft.AspNetCore.Identity.UI` | 8.0.0 | صفحات Login/Logout الجاهزة |
-| `Microsoft.EntityFrameworkCore` | 8.0.0 | ORM للتعامل مع قاعدة البيانات |
-| `Microsoft.EntityFrameworkCore.SqlServer` | 8.0.0 | Provider لـ SQL Server |
-| `Microsoft.EntityFrameworkCore.Tools` | 8.0.0 | أدوات الـ Migrations |
-| `Microsoft.VisualStudio.Web.CodeGeneration.Design` | 8.0.0 | Scaffolding |
+| `Microsoft.AspNetCore.Identity.EntityFrameworkCore` | 8.0.0 | مصادقة وأذونات وجداول Identity |
+| `Microsoft.AspNetCore.Identity.UI` | 8.0.0 | صفحات المصادقة التلقائية |
+| `Microsoft.EntityFrameworkCore` | 8.0.0 | ORM الرئيسي |
+| `Microsoft.EntityFrameworkCore.SqlServer` | 8.0.0 | مزود الاتصال بقاعدة بيانات SQL Server |
+| `Microsoft.EntityFrameworkCore.Tools` | 8.0.0 | أدوات الـ CLI والـ Migrations |
+| `Microsoft.VisualStudio.Web.CodeGeneration.Design` | 8.0.0 | أدوات التوليد التلقائي (Scaffolding) |
 
-**مكتبات Frontend (من wwwroot/lib):**
-- Bootstrap 5 RTL (النسخة العربية)
-- jQuery
-- Bootstrap Icons
+### مكونات الواجهة (Frontend)
+- **محلياً (`wwwroot/lib`):** Bootstrap 5 RTL، jQuery، Bootstrap Icons
+- **CDN:** خط `Cairo` من Google Fonts، أيقونات Bootstrap Icons CDN
+- **صور وتصاميم:** صور رمزية للمستخدمين عبر UI-Avatars API
 
-**من CDN:**
-- Google Fonts — خط Cairo
-- Bootstrap Icons CDN
-
-### أدوات البناء والنشر
-- **Build:** `dotnet build` / Visual Studio
-- **Database:** EF Core Migrations (`dotnet ef migrations add` / `dotnet ef database update`)
-- **Hosting:** محلي فقط حالياً (IIS Express / Kestrel)
-- **لا يوجد CI/CD**
-
-### إصدارات مهمة
-- **.NET:** 8.0
-- **Target Framework:** `net8.0`
-- **Nullable:** مُفعّل
-- **Implicit Usings:** مُفعّل
-- **Package Manager:** NuGet
+### البيئة والنشر
+- **قاعدة البيانات المحلية / التطويرية:** SQL Server Local Instance (`LAPAZM\SQLEXPRESS01`).
+- **قاعدة بيانات الإنتاج السحابية:** SQL Server على `sql6031.site4now.net` (معرّفة في `appsettings.Production.json` و `appsettings.json`).
+- **تكوين الـ JSON:** `JsonOptions.PropertyNamingPolicy = null` مفعل لضمان تطابق أسماء الخصائص (PascalCase) بين C# و Javascript.
 
 ---
 
-## 3. هيكل المجلدات
+## 3. هيكل المجلدات الفعلي
 
 ```
 Alnkhil/
 ├── Areas/
 │   └── Identity/
 │       └── Pages/
-│           └── Account/          ← صفحات Login/Logout/Register (من Identity UI)
-├── Controllers/                  ← جميع controllers الخاصة بالتطبيق
-│   ├── CategoriesController.cs   ← إدارة التصنيفات (Admin فقط)
-│   ├── DashboardController.cs    ← التقارير والإحصاءات (Admin فقط)
-│   ├── DebtsController.cs        ← إدارة الديون (عام للمسجّلين)
-│   ├── HomeController.cs         ← الصفحة الرئيسية
-│   ├── InventoryControllers.cs   ← سجل حركة المخزون (Admin فقط)
-│   ├── PricingController.cs      ← عرض وتعديل أسعار البيع (Admin فقط)
-│   ├── PricingSettingsController.cs ← إعدادات الربح والضريبة (Admin فقط)
-│   ├── ProductsController.cs     ← إدارة المنتجات — Edit/Delete فقط (Admin)
-│   ├── PurchasesController.cs    ← فواتير الشراء (عام)
-│   ├── SalesController.cs        ← فواتير البيع (Admin + Cashier)
-│   └── UsersController.cs        ← إدارة المستخدمين/الكاشيرين (Admin فقط)
+│           └── Account/             ← صفحات Login/Logout الجاهزة
+├── Controllers/                     ← المتحكمات (Controllers)
+│   ├── CategoriesController.cs      ← إدارة التصنيفات (Admin)
+│   ├── DashboardController.cs       ← التقارير التحليلية واليومية والشهرية
+│   ├── DebtsController.cs           ← إدارة الديون وسدادها (Admin + Cashier)
+│   ├── HomeController.cs            ← لوحة القيادة السريعة وبوابة النظام (System)
+│   ├── InventoryControllers.cs      ← سجل حركات المخزون التاريخية (Admin)
+│   ├── PricingController.cs         ← جدول مراقبة وتعديل أسعار البيع وهوامش الربح (Admin)
+│   ├── PricingSettingsController.cs ← إعدادات نسبة الربح ونسبة الضريبة (Admin)
+│   ├── ProductsController.cs        ← عرض وتعديل وحذف المنتجات (Admin)
+│   ├── PurchasesController.cs       ← فواتير الشراء والطلبيات والبحث (Admin + Cashier)
+│   ├── SalesController.cs           ← فواتير البيع ونقاط البيع والفواتير المعلقة (Admin + Cashier)
+│   ├── SuppliersController.cs       ← [جديد V2.0] إدارة الموردين وبيانات الاتصال (Admin)
+│   └── UsersController.cs           ← إدارة الكاشيرين وصلاحيات المستخدمين (Admin)
 ├── Data/
-│   ├── alnakhilContext.cs        ← DbContext الرئيسي
-│   └── DbInitializer.cs          ← Seed البيانات الأولية (Admin + الأدوار)
+│   ├── alnakhilContext.cs           ← DbContext الرئيسي متضمناً كافة الـ DbSets
+│   └── DbInitializer.cs             ← تهيئة الأدوار والمستخدم الافتراضي (Admin)
 ├── Helpers/
-│   └── PricingHelper.cs          ← حساب سعر البيع تلقائياً
-├── Migrations/                   ← جميع ملفات EF Core Migrations (61 ملف)
-├── Models/                       ← نماذج قاعدة البيانات
-│   ├── ApplicationUser.cs        ← امتداد IdentityUser (يُضيف FullName)
-│   ├── Category.cs
-│   ├── DebtPayment.cs
-│   ├── ErrorViewModel.cs
-│   ├── InventoryTransaction.cs
-│   ├── PaymentStatus.cs          ← Enum: Unpaid/Paid/Deferred/Suspended
-│   ├── PricingSetting.cs
-│   ├── Product.cs
-│   ├── Purchase.cs
-│   ├── PurchaseItem.cs
-│   ├── Sale.cs
-│   ├── SaleItem.cs
-│   ├── Supplier.cs
-│   └── User.cs
+│   └── PricingHelper.cs             ← خوارزمية تسعير البيع التلقائي بالتقريب للـ 100
+├── Migrations/                      ← 61 ملف migrations (30 migration + ModelSnapshot)
+├── Models/                          ← كيانات وقواعد البيانات (Entities)
+│   ├── ApplicationUser.cs           ← توسيع لـ IdentityUser (مع حقل FullName)
+│   ├── Category.cs                  ← تصنيف الأصناف
+│   ├── DebtPayment.cs               ← سجل سداد الديون الجزئية والكلية
+│   ├── ErrorViewModel.cs            ← نموذج رسائل الخطأ
+│   ├── InventoryTransaction.cs      ← سجل حركة المخزن (Purchase, Sale, Adjustment)
+│   ├── PaymentStatus.cs             ← Enum: Unpaid, Paid, Deferred, Suspended
+│   ├── PricingSetting.cs            ← إعدادات الربح والضريبة
+│   ├── Product.cs                   ← بيانات المنتج والباركود وسعر الشراء والبيع
+│   ├── Purchase.cs                  ← ترويسة فاتورة الشراء وبيانات المورد
+│   ├── PurchaseItem.cs              ← أصناف فاتورة الشراء
+│   ├── Sale.cs                      ← ترويسة فاتورة البيع والعميل وحالة التعليق
+│   ├── SaleItem.cs                  ← أصناف فاتورة البيع وأسعار البيع الفعلية
+│   ├── Supplier.cs                  ← بيانات المورد (الاسم، الهاتف، وقائمة مشترياته)
+│   └── User.cs                      ← (ملف قديم غير مستخدم)
 ├── Properties/
-│   └── launchSettings.json       ← إعدادات التشغيل المحلي
+│   └── launchSettings.json          ← ملف إعدادات التشغيل
 ├── Services/
-│   ├── EmailSender.cs            ← Stub فارغ لـ IEmailSender (مطلوب من Identity)
-│   └── InventoryService.cs       ← منطق تحديث المخزون عند الشراء/البيع/الإلغاء
-├── ViewModels/                   ← نماذج العرض (DTO بين Controller و View)
+│   ├── EmailSender.cs               ← Stub لـ IEmailSender
+│   └── InventoryService.cs          ← تطبيق العمليات على المخزون (شراء، بيع، إلغاء)
+├── ViewModels/                      ← نماذج العرض وتمرير البيانات (DTOs)
 │   ├── CreateCashierVM.cs
 │   ├── DashboardVM.cs
 │   ├── DebtDetailsVM.cs
@@ -121,69 +113,45 @@ Alnkhil/
 │   ├── PricingVM.cs
 │   ├── ProductVM.cs
 │   ├── PurchaseItemVM.cs
-│   ├── PurchaseVM.cs
+│   ├── PurchaseVM.cs (يتضمن SupplierId)
 │   ├── SaleItemVM.cs
 │   ├── SaleVM.cs
 │   ├── TodayStatsVM.cs
 │   └── UserWithRoleVM.cs
-├── Views/                        ← صفحات Razor لكل Controller
-│   ├── Categories/               ← Index, Create
-│   ├── Dashboard/                ← Index, Today, Monthly
-│   ├── Debts/                    ← Index, Details
-│   ├── Home/                     ← Index (لوحة تحكم رئيسية), System, Privacy
-│   ├── Inventory/                ← Index (سجل الحركة)
-│   ├── Pricing/                  ← Index
-│   ├── Products/                 ← Index, Edit, Delete
-│   ├── Purchases/                ← Index, Create, Edit, Details
-│   ├── Sales/                    ← Index, Create, Edit, Details
-│   ├── Shared/
-│   │   ├── _Layout.cshtml        ← القالب الرئيسي (Sidebar + TopBar)
-│   │   ├── _LoginPartial.cshtml
-│   │   └── _ValidationScriptsPartial.cshtml
-│   ├── Users/                    ← Index, Create, Edit, Delete, Details
+├── Views/                           ← واجهات Razor
+│   ├── Categories/                  ← Index, Create
+│   ├── Dashboard/                   ← Index, Today, Monthly
+│   ├── Debts/                       ← Index, Details, _DebtTable
+│   ├── Home/                        ← Index, System (بوابة الإدارة), Privacy
+│   ├── Inventory/                   ← Index (سجل الحركات)
+│   ├── Pricing/                     ← Index (مراقبة وتعديل الأسعار)
+│   ├── PricingSettings/             ← Index (تعديل نسب الربح والضريبة)
+│   ├── Products/                    ← Index, Edit, Delete
+│   ├── Purchases/                   ← Index, Create, Edit, Details
+│   ├── Sales/                       ← Index, Create, Edit, Details
+│   ├── Shared/                      ← _Layout, _LoginPartial, _ValidationScriptsPartial
+│   ├── Suppliers/                   ← [جديد V2.0] Index, Create, Edit
+│   ├── Users/                       ← Index, Create, Edit, Delete, Details
 │   ├── _ViewImports.cshtml
 │   └── _ViewStart.cshtml
-├── wwwroot/
-│   ├── css/                      ← ملفات CSS مخصصة
-│   ├── js/                       ← ملفات JavaScript مخصصة
-│   └── lib/                      ← Bootstrap, jQuery (من NuGet/libman)
-├── alnakhil.csproj               ← ملف المشروع
-├── alnakhil.sln                  ← ملف الـ Solution
-├── appsettings.json              ← إعدادات الاتصال بقاعدة البيانات
-├── appsettings.Development.json  ← إعدادات بيئة التطوير
-├── Program.cs                    ← نقطة الدخول الرئيسية
-└── TODO.md                       ← مهام سابقة (مكتملة كلها)
+├── wwwroot/                         ← الملفات الثابتة (CSS, JS, Libs)
+├── alnakhil.csproj                  ← ملف إعدادات المشروع وحزم NuGet
+├── alnakhil.sln                     ← ملف الحل (Solution)
+├── appsettings.json                 ← إعدادات السيرفر والاتصال
+├── appsettings.Development.json     ← إعدادات بيئة التطوير
+├── appsettings.Production.json      ← [جديد V2.1] إعدادات بيئة الإنتاج السحابية
+└── Program.cs                       ← نقطة الدخول، إعداد الخدمات، وتهيئة قاعدة البيانات
 ```
-
-### الملفات المهمة
-| الغرض | الملف |
-|-------|-------|
-| نقطة الدخول | `Program.cs` |
-| DbContext | `Data/alnakhilContext.cs` |
-| القالب العام | `Views/Shared/_Layout.cshtml` |
-| حساب الأسعار | `Helpers/PricingHelper.cs` |
-| منطق المخزون | `Services/InventoryService.cs` |
-| إعداد قاعدة البيانات | `appsettings.json` |
 
 ---
 
-## 4. المعمارية (Architecture)
+## 4. المعمارية (Architecture) وقواعد البيانات
 
 ### نمط التصميم
-**MVC (Model-View-Controller)** — ASP.NET Core MVC الكلاسيكي. لا يوجد API منفصل؛ Frontend و Backend في نفس المشروع (Server-Side Rendering).
+- **ASP.NET Core MVC (Server-Side Rendering)** مع Razor Views.
+- يتم التواصل التفاعلي في شاشات البيع والشراء عبر مكالمات AJAX داخلية لإرجاع كائنات JSON (مثل البحث عن المنتجات بالباركود أو الاسم، أو تعليق الفواتير).
 
-### كيف يتواصل Frontend مع Backend
-1. **الطلبات العادية:** HTTP GET/POST عبر Razor Views + Form Submissions
-2. **البحث الديناميكي (AJAX):** `fetch()` أو `jQuery.ajax()` إلى endpoints تُرجع JSON:
-   - `GET /Sales/SearchProducts?query=...` — البحث عن منتج عند إنشاء فاتورة بيع
-   - `GET /Purchases/Search?q=...` — البحث عن منتج عند إنشاء فاتورة شراء
-   - `POST /Sales/Suspend` — حفظ فاتورة معلّقة (يُرجع JSON)
-3. **لا يوجد SPA أو REST API منفصل** — كل شيء Server-Side.
-4. **JsonOptions:** تم ضبط `PropertyNamingPolicy = null` لضمان إرجاع أسماء الخصائص كما هي (PascalCase).
-
-### هيكل قاعدة البيانات
-
-#### الجداول الرئيسية
+### هيكل قاعدة البيانات والعلاقات
 
 ```
 AspNetUsers (Identity)
@@ -199,28 +167,29 @@ Product
   ├── Name (Required, max 100)
   ├── Barcode (max 50)
   ├── Quantity (int)
-  ├── PurchasePrice (decimal 18,2)   ← إجمالي سعر الشراء (مش سعر الوحدة)
-  ├── SalePrice (decimal 18,2)       ← يُحسب تلقائياً أو يدوياً
-  ├── IsManualPrice (bool)
-  ├── ManualSalePrice (decimal?)
+  ├── PurchasePrice (decimal 18,2)   ← سعر شراء الوحدة الواحدة (Unit Price)
+  ├── SalePrice (decimal 18,2)       ← سعر البيع المقترح أو اليدوي
+  ├── IsManualPrice (bool)           ← هل تم تحديد السعر يدوياً
+  ├── ManualSalePrice (decimal?)     ← السعر اليدوي المحفوظ
   ├── ExpirationDate (DateTime?)
   └── CategoryId (FK → Category, nullable)
 
 Supplier
   ├── Id (PK)
   ├── Name (Required)
-  └── Phone (string?)
+  ├── Phone (string?)
+  └── Purchases (Navigation 1:N → Purchase)
 
 Purchase
   ├── Id (PK)
   ├── PurchaseDate (DateTime)
-  ├── InvoiceNumber (string?, max 50) ← يُولَّد بعد الحفظ: "PUR-{Id:00000}"
+  ├── InvoiceNumber (string?, max 50) ← "PUR-{Id:00000}"
   ├── SupplierName (string, max 150)
-  ├── SupplierId (FK → Supplier, nullable)
+  ├── SupplierId (FK → Supplier, nullable) ← [مفعل V2.0]
   ├── Subtotal / TaxPercentage / TaxAmount / DiscountPercentage / DiscountAmount / TotalAmount
   ├── AmountPaid (decimal)
-  ├── PaymentStatus (enum)
-  └── DueDate (DateTime?)
+  ├── PaymentStatus (enum: Paid, Deferred, Unpaid)
+  └── DueDate (DateTime?)             ← إلزامي عند اختيار دين آجل (Deferred)
 
 PurchaseItem
   ├── Id (PK)
@@ -228,19 +197,19 @@ PurchaseItem
   ├── ProductId (FK → Product)
   ├── CategoryId (FK → Category, nullable)
   ├── Quantity (int)
-  ├── PurchasePrice (decimal) ← إجمالي سعر هذا الصنف (وليس سعر الوحدة)
+  ├── PurchasePrice (decimal)         ← إجمالي سعر هذا الصنف بالفاتورة
   ├── ExpiryDate (DateTime?)
   └── [NotMapped] UnitPurchasePrice = PurchasePrice / Quantity
 
 Sale
   ├── Id (PK)
   ├── SaleDate (DateTime)
-  ├── InvoiceNumber (Required) ← "S{N:D6}" عادي أو "H{N:D6}" معلّق
+  ├── InvoiceNumber (Required)        ← "S{N:D6}" عادي أو "H{N:D6}" معلّق
   ├── CustomerName (string?)
   ├── Subtotal / TaxAmount / DiscountAmount / TotalAmount
   ├── AmountPaid (decimal)
   ├── IsSuspended (bool)
-  ├── PaymentStatus (enum)
+  ├── PaymentStatus (enum: Paid, Deferred, Unpaid, Suspended)
   └── DueDate (DateTime?)
 
 SaleItem
@@ -248,7 +217,7 @@ SaleItem
   ├── SaleId (FK → Sale)
   ├── ProductId (FK → Product)
   ├── Quantity (int)
-  └── UnitPrice (decimal) ← سعر البيع وقت البيع
+  └── UnitPrice (decimal)
 
 InventoryTransaction
   ├── Id (PK)
@@ -269,444 +238,211 @@ DebtPayment
 
 PricingSetting
   ├── Id (PK)
-  ├── ProfitPercentage (decimal) ← نسبة الربح الافتراضية (مثال: 20)
-  └── TaxPercentage (decimal)   ← نسبة الضريبة (مثال: 15)
+  ├── ProfitPercentage (decimal)      ← نسبة الربح الافتراضية
+  └── TaxPercentage (decimal)         ← نسبة الضريبة الافتراضية (القيمة الافتراضية: 0%)
 ```
 
-#### العلاقات
-- `Category` ← (1:N) → `Product`
-- `Supplier` ← (1:N) → `Purchase`
-- `Purchase` ← (1:N) → `PurchaseItem`
-- `PurchaseItem` → `Product` (N:1)
-- `Sale` ← (1:N) → `SaleItem`
-- `SaleItem` → `Product` (N:1)
-- `InventoryTransaction` → `Product` (N:1)
-- `DebtPayment` → `Purchase` أو `Sale` (اختياري)
-- `PricingSetting` جدول وحيد (صف واحد فقط في الغالب)
+#### العلاقات المترابطة:
+- `Supplier (1)` ⟷ `(N) Purchase`: يمكن اختيار مورد مسجل أو كتابة اسم مورد جديد ليتم إنشاؤه تلقائياً.
+- `Purchase (1)` ⟷ `(N) PurchaseItem` ⟷ `(1) Product`
+- `Sale (1)` ⟷ `(N) SaleItem` ⟷ `(1) Product`
+- `Product (N)` ⟷ `(1) Category`
+- `Purchase (1)` ⟷ `(N) DebtPayment`: يتم إنشاء سجل دفع فعلي في جدول `DebtPayments` عند كل عملية سداد لمورد.
+- `Sale (1)` ⟷ `(N) DebtPayment`: يتم إنشاء سجل دفع فعلي في جدول `DebtPayments` عند كل عملية سداد من عميل.
 
-### نظام المصادقة (Auth)
-
-**المزود:** ASP.NET Core Identity  
-**نموذج المستخدم:** `ApplicationUser : IdentityUser` + حقل `FullName`
-
-**الأدوار:**
-| الدور | الصلاحيات |
-|------|-----------|
-| `Admin` | كل شيء |
-| `Cashier` | إنشاء فواتير البيع فقط |
-
-**تهيئة الأدوار:**  
-- تُنشأ الأدوار (`Admin`, `Cashier`) تلقائياً عند تشغيل التطبيق في `Program.cs` (lines 43-56).
-- `DbInitializer.SeedRolesAndAdminAsync()` موجود لكنه **غير مستدعى من Program.cs** (تعارض مع الكود في Program.cs — ينشئ `admin@admin.com` بكلمة `Admin@123` كـ fallback فقط).
-
-**صفحات Identity:**  
-- تُستخدم الصفحات الجاهزة من `Microsoft.AspNetCore.Identity.UI` عبر `Areas/Identity/Pages/Account/`.
-- تسجيل الخروج: عبر POST form في `_LoginPartial.cshtml` أو `_Layout.cshtml`.
-
-**إعدادات كلمة المرور** (مُخففة):
-```
-RequireDigit = false
-RequiredLength = 6
-RequireUppercase = false
-RequireNonAlphanumeric = false
-```
-
-### الحضارة (Culture)
-تم تثبيت الثقافة على `en-US` في نهاية `Program.cs` لضمان عمل أرقام الـ Decimal بشكل صحيح في جميع الطلبات.
+### نظام المصادقة والـ Seed التلقائي
+1. **التهيئة التلقائية (`DbInitializer`):**
+   - يتم استدعاؤه تلقائياً في `Program.cs` عند إقلاع التطبيق عبر `DbInitializer.SeedRolesAndAdminAsync()`.
+   - يقوم بإنشاء دوري `Admin` و `Cashier`.
+   - يقوم بإنشاء حساب المدير الافتراضي إذا لم يكن موجوداً:
+     - **Email:** `admin@admin.com`
+     - **Password:** `Admin@123`
+     - **Role:** `Admin`
+2. **إعدادات كلمات المرور:**
+   - مخففة لسهولة الاستخدام بنقاط البيع (`RequireDigit = false`, `RequiredLength = 6`, `RequireUppercase = false`, `RequireNonAlphanumeric = false`).
 
 ---
 
-## 5. الـ Routes والـ Endpoints
+## 5. خريطة المتحكمات والـ Endpoints
 
-> **ملاحظة:** المشروع يستخدم MVC Routing التقليدي — لا يوجد REST API منفصل.  
-> النمط الافتراضي: `{controller=Home}/{action=Index}/{id?}`
+### 1. SuppliersController — `/Suppliers` [جديد V2.0]
+| الـ Method | المسار | الوصف | الصلاحيات المطلوبة |
+|------------|--------|--------|---------------------|
+| GET | `/Suppliers` | قائمة الموردين مع أرقام الهواتف وعدد فواتيرهم | `Admin` |
+| GET | `/Suppliers/Create` | نموذج إضافة مورد جديد | `Admin` |
+| POST | `/Suppliers/Create` | حفظ المورد مع منع تكرار الأسماء | `Admin` |
+| GET | `/Suppliers/Edit/{id}` | نموذج تعديل بيانات المورد | `Admin` |
+| POST | `/Suppliers/Edit/{id}` | حفظ تعديلات اسم وهاتف المورد | `Admin` |
 
-### SalesController — `/Sales`
-| Method | Path | الوصف | الصلاحيات |
-|--------|------|--------|-----------|
-| GET | `/Sales` | قائمة جميع الفواتير | Admin, Cashier |
-| GET | `/Sales/Details/{id}` | تفاصيل فاتورة | Admin, Cashier |
-| GET | `/Sales/Create` | نموذج فاتورة جديدة | Admin, Cashier |
-| POST | `/Sales/Create` | حفظ فاتورة جديدة | Admin, Cashier |
-| POST | `/Sales/Suspend` | حفظ فاتورة معلّقة (JSON body) | Admin, Cashier |
-| GET | `/Sales/SearchProducts?query=` | بحث منتجات (يُرجع JSON) | Admin, Cashier |
-| GET | `/Sales/Edit/{id}` | نموذج تعديل فاتورة | Admin, Cashier |
-| POST | `/Sales/Edit` | حفظ تعديل فاتورة | Admin, Cashier |
-| POST | `/Sales/Delete/{id}` | حذف فاتورة (يُعيد المخزون) | Admin, Cashier |
+### 2. PurchasesController — `/Purchases`
+| الـ Method | المسار | الوصف | الصلاحيات المطلوبة |
+|------------|--------|--------|---------------------|
+| GET | `/Purchases` | استعراض فواتير الشراء | `Admin, Cashier` |
+| GET | `/Purchases/Create` | نموذج إنشاء فاتورة شراء جديدة وتحديد المورد وحالة الدفع | مسجل |
+| POST | `/Purchases/Create` | حفظ الفاتورة، ربط/إنشاء المورد، منع تكرار المنتجات بالاسم، وتحديث المخزون | مسجل |
+| GET | `/Purchases/Details/{id}`| تفاصيل الفاتورة وأصنافها والمورد | مسجل |
+| GET | `/Purchases/Edit/{id}` | نموذج تعديل الفاتورة (يمنع تعديل الفواتير المدفوعة بالكامل) | `Admin` |
+| POST | `/Purchases/Edit/{id}` | حفظ التعديل مع **عكس كميات الأصناف القديمة من المخزون أولاً** قبل تطبيق الأصناف المعدلة | مسجل (يمنع Paid) |
+| POST | `/Purchases/Delete/{id}`| حذف الفاتورة وإلغاء الكميات من المخزون | `Admin` |
+| GET | `/Purchases/Search?q=` | بحث سريع بالاسم والباركود لإكمال أصناف الفاتورة (JSON) | مسجل |
 
-### PurchasesController — `/Purchases`
-| Method | Path | الوصف | الصلاحيات |
-|--------|------|--------|-----------|
-| GET | `/Purchases` | قائمة المشتريات | عام (مسجّل) |
-| GET | `/Purchases/Create` | نموذج شراء جديد | عام |
-| POST | `/Purchases/Create` | حفظ فاتورة شراء | عام |
-| GET | `/Purchases/Details/{id}` | تفاصيل فاتورة | عام |
-| GET | `/Purchases/Edit/{id}` | نموذج تعديل | عام |
-| POST | `/Purchases/Edit/{id}` | حفظ تعديل | عام |
-| POST | `/Purchases/Delete/{id}` | حذف فاتورة (يعكس المخزون) | عام |
-| GET | `/Purchases/Search?q=` | بحث منتجات (JSON) | عام |
+### 3. SalesController — `/Sales`
+| الـ Method | المسار | الوصف | الصلاحيات المطلوبة |
+|------------|--------|--------|---------------------|
+| GET | `/Sales` | قائمة جميع فواتير البيع | `Admin, Cashier` |
+| GET | `/Sales/Details/{id}` | تفاصيل الفاتورة وطباعتها | `Admin, Cashier` |
+| GET | `/Sales/Create` | شاشة نقطة البيع (POS) | `Admin, Cashier` |
+| POST | `/Sales/Create` | حفظ الفاتورة وخصم الكميات من المخزن | `Admin, Cashier` |
+| POST | `/Sales/Suspend` | تعليق الفاتورة (`IsSuspended = true`) بدون خصم كميات | `Admin, Cashier` |
+| GET | `/Sales/SearchProducts?query=` | بحث المنتجات والباركود في شاشة البيع (JSON) | `Admin, Cashier` |
+| GET | `/Sales/Edit/{id}` | فتح وتعديل فاتورة أو استئناف فاتورة معلقة | `Admin, Cashier` |
+| POST | `/Sales/Edit` | حفظ التعديلات وإدارة فروقات المخزون بذكاء | `Admin, Cashier` |
+| POST | `/Sales/Delete/{id}` | حذف فاتورة البيع واسترجاع كمياتها للمخزن | **`Admin` فقط** |
 
-> ⚠️ **ملاحظة:** `PurchasesController` لا يوجد عليه `[Authorize]` صريح → لكن الوصول يتطلب تسجيل الدخول في الواقع لأن middleware الـ Authentication موجود. هذا قد يكون ثغرة أو قصداً.
+### 4. DebtsController — `/Debts`
+| الـ Method | المسار | الوصف | الصلاحيات المطلوبة |
+|------------|--------|--------|---------------------|
+| GET | `/Debts` | جدول ملخص ديون الموردين (علينا) والعملاء (لنا) | `Admin, Cashier` |
+| GET | `/Debts/Details?name=&type=` | كشف حساب تفصيلي لعميل أو مورد وطباعة التقرير | `Admin, Cashier` |
+| POST | `/Debts/Pay` | سداد دفعة وتحديث حالة الفاتورة **وتسجيل السداد في جدول `DebtPayments`** | `Admin, Cashier` |
 
-### ProductsController — `/Products`
-| Method | Path | الوصف | الصلاحيات |
-|--------|------|--------|-----------|
-| GET | `/Products` | قائمة المنتجات | Admin |
-| GET | `/Products/Edit/{id}` | نموذج تعديل منتج | Admin |
-| POST | `/Products/Edit` | حفظ تعديل منتج | Admin |
-| GET | `/Products/Delete/{id}` | صفحة تأكيد الحذف | Admin |
-| POST | `/Products/Delete/{id}` | تأكيد الحذف | Admin |
+### 5. PricingSettingsController — `/PricingSettings`
+| الـ Method | المسار | الوصف | الصلاحيات المطلوبة |
+|------------|--------|--------|---------------------|
+| GET | `/PricingSettings` | عرض إعدادات نسبة الربح ونسبة الضريبة | `Admin` |
+| POST | `/PricingSettings/Update` | تحديث **نسبة الربح ونسبة الضريبة** معاً | `Admin` |
 
-> **مهم:** لا توجد عملية Create للمنتجات عبر هذا Controller. المنتجات **تُضاف فقط عبر فاتورة الشراء** (PurchasesController).
+### 6. PricingController — `/Pricing`
+| الـ Method | المسار | الوصف | الصلاحيات المطلوبة |
+|------------|--------|--------|---------------------|
+| GET | `/Pricing` | جدول مقارنة تكلفة آخر شراء وسعر البيع وهوامش الربح | `Admin` |
+| POST | `/Pricing/Update` | تعديل سعر البيع وتثبيته كسعر يدوي (`IsManualPrice = true`) | `Admin` |
 
-### DashboardController — `/Dashboard`
-| Method | Path | الوصف | الصلاحيات |
-|--------|------|--------|-----------|
-| GET | `/Dashboard` | لوحة التقارير الرئيسية (آخر 6 أشهر) | `[Authorize]` |
-| GET | `/Dashboard/Today` | إحصاءات اليوم + رسوم ساعية | Admin |
-| GET | `/Dashboard/Monthly?year=&month=` | إحصاءات شهر محدد | Admin |
+### 7. DashboardController — `/Dashboard`
+| الـ Method | المسار | الوصف | الصلاحيات المطلوبة |
+|------------|--------|--------|---------------------|
+| GET | `/Dashboard` | لوحة المؤشرات الشاملة، آخر 6 أشهر، والديون والمخزون المنخفض | `[Authorize]` |
+| GET | `/Dashboard/Today` | حركة مبيعات اليوم الساعية وأعلى 5 منتجات مبيعاً | `[Authorize]` |
+| GET | `/Dashboard/Monthly` | مبيعات ومشتريات الشهر المختار يومياً ومقارنتها بالسابق | `[Authorize]` |
 
-### DebtsController — `/Debts`
-| Method | Path | الوصف | الصلاحيات |
-|--------|------|--------|-----------|
-| GET | `/Debts` | قائمة الديون مجمّعة (مشتريات + مبيعات) | عام |
-| GET | `/Debts/Details?name=&type=` | تفاصيل ديون عميل/مورد | عام |
-| POST | `/Debts/Pay?id=&amount=` | تسجيل دفعة على فاتورة | عام |
+### 8. ProductsController — `/Products`
+| الـ Method | المسار | الوصف | الصلاحيات المطلوبة |
+|------------|--------|--------|---------------------|
+| GET | `/Products` | قائمة كافة منتجات المخزن مع الكميات والأسعار | `Admin` |
+| GET | `/Products/Edit/{id}` | تعديل بيانات الصنف والتسعير وتاريخ الانتهاء | `Admin` |
+| POST | `/Products/Edit` | حفظ تعديل الصنف | `Admin` |
+| GET | `/Products/Delete/{id}` | صفحة تأكيد الحذف | `Admin` |
+| POST | `/Products/Delete/{id}` | حذف المنتج نهائياً من النظام | `Admin` |
 
-### UsersController — `/Users`
-| Method | Path | الوصف | الصلاحيات |
-|--------|------|--------|-----------|
-| GET | `/Users` | قائمة المستخدمين مع أدوارهم | Admin |
-| GET | `/Users/Details/{id}` | تفاصيل مستخدم | Admin |
-| GET | `/Users/Edit/{id}` | تعديل مستخدم | Admin |
-| POST | `/Users/Edit` | حفظ التعديل (FullName + Role) | Admin |
-| GET | `/Users/Create` | نموذج إنشاء كاشير | Admin |
-| POST | `/Users/Create` | إنشاء كاشير | Admin |
-| GET | `/Users/Delete/{id}` | صفحة تأكيد الحذف | Admin |
-| POST | `/Users/Delete/{id}` | حذف مستخدم (يمنع حذف Admin) | Admin |
+### 9. UsersController — `/Users`
+| الـ Method | المسار | الوصف | الصلاحيات المطلوبة |
+|------------|--------|--------|---------------------|
+| GET | `/Users` | قائمة المستخدمين وأدوارهم وهواتفهم | `Admin` |
+| GET | `/Users/Create` | نموذج إنشاء حساب كاشير جديد | `Admin` |
+| POST | `/Users/Create` | حفظ وإنشاء الكاشير وإسناد دور Cashier له | `Admin` |
+| GET | `/Users/Edit/{id}` | تعديل بيانات وصلاحية المستخدم | `Admin` |
+| POST | `/Users/Edit` | حفظ الاسم وتغيير الدور | `Admin` |
+| POST | `/Users/Delete/{id}` | حذف مستخدم (محمي: يمنع حذف الأدمن) | `Admin` |
 
-### CategoriesController — `/Categories`
-| Method | Path | الوصف | الصلاحيات |
-|--------|------|--------|-----------|
-| GET | `/Categories` | قائمة التصنيفات | Admin |
-| GET | `/Categories/Create` | نموذج إضافة تصنيف | Admin |
-| POST | `/Categories/Create` | حفظ تصنيف | Admin |
-
-### PricingController — `/Pricing`
-| Method | Path | الوصف | الصلاحيات |
-|--------|------|--------|-----------|
-| GET | `/Pricing` | جدول أسعار جميع المنتجات | Admin |
-| POST | `/Pricing/Update` | تحديث سعر البيع لمنتج | Admin |
-
-### PricingSettingsController — `/PricingSettings`
-| Method | Path | الوصف | الصلاحيات |
-|--------|------|--------|-----------|
-| GET | `/PricingSettings` | عرض إعدادات الربح والضريبة | Admin |
-| POST | `/PricingSettings/Update` | تحديث نسبة الربح | Admin |
-
-> ⚠️ **ملاحظة:** `Update` في `PricingSettingsController` يُحدّث `ProfitPercentage` فقط، لكن `TaxPercentage` في `PricingSetting` تُقرأ عند الحساب من كل مكان. لا يوجد endpoint لتعديل `TaxPercentage` عبر هذا Controller.
-
-### InventoryController — `/Inventory`
-| Method | Path | الوصف | الصلاحيات |
-|--------|------|--------|-----------|
-| GET | `/Inventory` | سجل حركة المخزون كاملاً | Admin |
-
-### HomeController — `/`
-| Method | Path | الوصف |
-|--------|------|--------|
-| GET | `/` أو `/Home` | لوحة تحكم رئيسية (ملخص سريع) |
-| GET | `/Home/System` | صفحة الإعدادات (view فارغة تقريباً) |
-| GET | `/Home/Privacy` | صفحة الخصوصية |
-| GET | `/Home/Error` | صفحة الخطأ |
+### 10. Controllers إضافية
+- **`CategoriesController` (`/Categories`):** إضافة واستعراض أقسام المنتجات (Admin).
+- **`InventoryControllers` (`/Inventory`):** استعراض تاريخ حركات التوريد والبيع والتسوية (Admin).
+- **`HomeController` (`/`):**
+  - `/` أو `/Home/Index`: لوحة مؤشرات سريعة ومختصرة.
+  - `/Home/System`: بوابة الإدارة والنظام المركزية (روابط سريعة لكافة أقسام المنظومة).
 
 ---
 
-## 6. المتغيرات البيئية (Environment Variables)
+## 6. الإعدادات وسلاسل الاتصال (Configuration)
 
-المشروع **لا يستخدم `.env` files** — الإعدادات موجودة في:
-
-### `appsettings.json`
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "..."   // ← سلسلة الاتصال بـ SQL Server
-  },
-  "Logging": { ... },
-  "AllowedHosts": "*"
-}
-```
-
-### `appsettings.Development.json`
-```json
-{
-  "Logging": {
-    "LogLevel": { "Default": "Information", "Microsoft.AspNetCore": "Warning" }
-  }
-}
-```
-
-### الإعدادات المطلوبة للتشغيل
-| المتغير | الموقع | الغرض |
-|---------|--------|-------|
-| `ConnectionStrings:DefaultConnection` | `appsettings.json` | الاتصال بـ SQL Server |
-
-**Connection String الحالية** (مخصصة لجهاز المطور):
-```
-Server=LAPAZM\SQLEXPRESS01;Database=alnakhilDb;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;
-```
-> يجب تعديلها لكل بيئة جديدة.
-
-**ملاحظة:** لا توجد إعدادات للـ Email أو JWT أو Cloud — `EmailSender` هو stub فارغ.
+### ملفات الإعداد
+1. **`appsettings.json`:**
+   يحتوي على إعدادات الاتصال الافتراضية ومستوى السجلات:
+   ```json
+   {
+     "ConnectionStrings": {
+       "DefaultConnection": "Data Source=sql6031.site4now.net;Initial Catalog=db_ace006_alnkhil;User Id=db_ace006_alnkhil_admin;Password=@Azm210699;Encrypt=True;TrustServerCertificate=True;"
+     },
+     "Logging": {
+       "LogLevel": {
+         "Default": "Information",
+         "Microsoft.AspNetCore": "Warning"
+       }
+     },
+     "AllowedHosts": "*"
+   }
+   ```
+2. **`appsettings.Production.json`:**
+   يحتوي على سلسلة الاتصال المخصصة لبيئة الإنتاج السحابي على خادم `site4now.net`.
+3. **`appsettings.Development.json`:**
+   مخصص لمستوى سجلات بيئة التطوير المحلية.
 
 ---
 
-## 7. الأوامر المهمة
+## 7. منطق الأعمال المتقدم (Business Logic & Gotchas)
 
-### تشغيل المشروع محلياً
+### 1. تسعير الشراء والبيع والوحدات
+- **في `PurchaseItem`:** خاصية `PurchasePrice` تمثل **إجمالي سعر الصنف** في الفاتورة (مثال: سعر الكرتون كاملاً)، وسعر الوحدة الواحدة يُحسب عبر:
+  $$\text{UnitPurchasePrice} = \frac{\text{PurchasePrice}}{\text{Quantity}}$$
+- **في `Product`:** خاصية `PurchasePrice` في جدول المنتجات تُخزن **سعر شراء الوحدة الواحدة** (`unitPrice`) وليس إجمالي سعر الكرتون (تم توحيد هذا المنطق في `InventoryService`).
+- **حساب سعر البيع التلقائي (`PricingHelper`):**
+  يتم احتساب السعر بإضافة نسبة الربح مع **رفعه دائماً إلى أقرب 100 تالية**:
+  $$\text{SalePrice} = \left(\lfloor \frac{\text{PriceWithProfit}}{100} \rfloor + 1\right) \times 100$$
+  *مثال:* تكلفة الشراء 150 مع ربح 20% = 180 ← يُرفع تلقائياً إلى **200**.
+- **السعر اليدوي (`IsManualPrice`):** عند تعديل السعر من صفحة `Pricing` أو `Products/Edit` يتم تثبيت `IsManualPrice = true` حتى لا يتم تغييره تلقائياً عند شراء شحنات لاحقة إلا إذا أُلغي التثبيت.
+
+### 2. معالجة المخزون الدقيقة عند تعديل فاتورة الشراء (`PurchasesController.Edit`)
+- عند تعديل فاتورة شراء قديمة، يقوم النظام أولاً **بعكس وحذف الكميات القديمة من المخزن** وتسجيل حركة مخزون سالبة، ثم يحذف الأصناف القديمة ويضيف الأصناف الجديدة مع تحديث المخزن، مما يمنع تراكم الكميات الوهمي.
+
+### 3. الفواتير المعلقة (`Suspended Sales`)
+- فواتير البيع المعلقة تأخذ البادئة `H` (مثل `H000012`) وحالة `PaymentStatus = Suspended`.
+- الفواتير المعلقة **لا تخصم من المخزون** حتى يتم استئنافها وتأكيد بيعها فتتحول إلى `S` (مثل `S000012`).
+
+### 4. حماية حركة المبيعات والمشتريات
+- حذف فواتير البيع مقصور على الـ `Admin` فقط.
+- تعديل فواتير الشراء مقصور على الـ `Admin` وممنوع تماماً على أي فاتورة حالتها `Paid`.
+
+### 5. نظام الديون والسداد (`Debts & DebtPayments`)
+- كل عملية سداد تتم عبر `DebtsController.Pay` تقوم بتسجيل صف جديد في جدول `DebtPayments` وتعديل المبلغ المسدد `AmountPaid` على الفاتورة.
+- إذا أصبح `AmountPaid >= TotalAmount` تتحول الفاتورة تلقائياً إلى `Paid`، وإلا تظل `Deferred`.
+
+---
+
+## 8. دليل المطور السريع (Developer Cheat Sheet)
+
+### لتشغيل وتطوير المشروع
 ```bash
-# من داخل مجلد المشروع (Alnkhil/)
-dotnet run
-# أو عبر Visual Studio: F5
-```
-> الـ URL الافتراضي: `https://localhost:7xxx` أو `http://localhost:5xxx` (حسب launchSettings.json)
-
-### إدارة قاعدة البيانات
-```bash
-# إضافة migration جديد
-dotnet ef migrations add [MigrationName]
-
-# تطبيق الـ migrations على قاعدة البيانات
-dotnet ef database update
-
-# عرض قائمة الـ migrations
-dotnet ef migrations list
-
-# حذف آخر migration (قبل التطبيق)
-dotnet ef migrations remove
-```
-
-### Build
-```bash
+# بناء المشروع
 dotnet build
-dotnet publish -c Release -o ./publish
+
+# تشغيل المشروع محلياً
+dotnet run
+
+# إضافة Migration جديد عند تعديل النماذج
+dotnet ef migrations add [اسم_التعديل]
+
+# تطبيق التعديلات على قاعدة البيانات
+dotnet ef database update
 ```
 
-### لا توجد scripts في package.json
-المشروع لا يستخدم Node.js — Frontend يعتمد على Razor + Bootstrap من `wwwroot/lib`.
+### بيانات الدخول التلقائية للمدير
+- **البريد:** `admin@admin.com`
+- **كلمة المرور:** `Admin@123`
+- **الدور:** `Admin`
 
-### بيانات الدخول الافتراضية (Seed)
-> **موجودة في `Data/DbInitializer.cs` لكن غير مستدعاة من Program.cs**
-- Email: `admin@admin.com`
-- Password: `Admin@123`
-- دور: `Admin`
-
-> المطور يجب أن يُنشئ حساب Admin يدوياً أو يستدعي `SeedRolesAndAdminAsync()` في Program.cs.
+### أين تجد الكود المطلوب لتعديل الميزات؟
+| المطلوب تعديله | الملفات المسؤولة |
+|----------------|------------------|
+| تعديل بيانات أو شاشات الموردين | [SuppliersController.cs](file:///c:/Users/aboba/OneDrive/Desktop/Alnkhil/Controllers/SuppliersController.cs) + [Views/Suppliers/](file:///c:/Users/aboba/OneDrive/Desktop/Alnkhil/Views/Suppliers/) |
+| تعديل نسب الربح والضريبة الافتراضية | [PricingSettingsController.cs](file:///c:/Users/aboba/OneDrive/Desktop/Alnkhil/Controllers/PricingSettingsController.cs) + [Views/PricingSettings/](file:///c:/Users/aboba/OneDrive/Desktop/Alnkhil/Views/PricingSettings/) |
+| تعديل مراقبة الأسعار وهامش الربح | [PricingController.cs](file:///c:/Users/aboba/OneDrive/Desktop/Alnkhil/Controllers/PricingController.cs) + [Views/Pricing/](file:///c:/Users/aboba/OneDrive/Desktop/Alnkhil/Views/Pricing/) |
+| شاشة البيع وحسابات الكاشير | [SalesController.cs](file:///c:/Users/aboba/OneDrive/Desktop/Alnkhil/Controllers/SalesController.cs) + [Views/Sales/Create.cshtml](file:///c:/Users/aboba/OneDrive/Desktop/Alnkhil/Views/Sales/Create.cshtml) |
+| شاشة الشراء وإضافة البضاعة | [PurchasesController.cs](file:///c:/Users/aboba/OneDrive/Desktop/Alnkhil/Controllers/PurchasesController.cs) + [Views/Purchases/Create.cshtml](file:///c:/Users/aboba/OneDrive/Desktop/Alnkhil/Views/Purchases/Create.cshtml) |
+| كشوفات الديون والسداد | [DebtsController.cs](file:///c:/Users/aboba/OneDrive/Desktop/Alnkhil/Controllers/DebtsController.cs) + [Views/Debts/](file:///c:/Users/aboba/OneDrive/Desktop/Alnkhil/Views/Debts/) |
+| القائمة الجانبية والهيدر العام | [Views/Shared/_Layout.cshtml](file:///c:/Users/aboba/OneDrive/Desktop/Alnkhil/Views/Shared/_Layout.cshtml) |
+| منطق تأثير المخزن | [Services/InventoryService.cs](file:///c:/Users/aboba/OneDrive/Desktop/Alnkhil/Services/InventoryService.cs) |
+| خوارزمية التسعير التقريبية | [Helpers/PricingHelper.cs](file:///c:/Users/aboba/OneDrive/Desktop/Alnkhil/Helpers/PricingHelper.cs) |
 
 ---
 
-## 8. الميزات الحالية
-
-### ✅ ميزات مُنفذة بالكامل
-
-**إدارة المنتجات والمخزون:**
-- عرض قائمة المنتجات مع التصنيف والكمية
-- تعديل بيانات المنتج (اسم، باركود، أسعار، تصنيف، تاريخ انتهاء)
-- حذف منتج
-- سجل تاريخي لكل حركة مخزون (Purchase / Sale / Adjustment)
-- منتجات تُضاف تلقائياً عند إنشاء فاتورة شراء لمنتج غير موجود
-
-**إدارة الشراء:**
-- إنشاء فاتورة شراء متعددة الأصناف
-- دعم المنتجات الموجودة + إنشاء منتج جديد من داخل الفاتورة
-- احتساب الضريبة والخصم على الفاتورة
-- تحديث المخزون + حساب سعر البيع تلقائياً عند الشراء
-- دعم الدفع الآجل (Deferred) مع تاريخ الاستحقاق
-- تعديل وحذف فواتير الشراء
-
-**إدارة البيع (POS):**
-- إنشاء فاتورة بيع بالبحث عن المنتج بالاسم أو الباركود (AJAX)
-- دعم الخصم على الفاتورة
-- حالات الدفع: نقدي / آجل / معلّق
-- الفواتير المعلّقة (Suspend): حفظ لاستكمالها لاحقاً بدون خصم من المخزون
-- تعديل الفاتورة مع معالجة ذكية للمخزون (إضافة/إزالة/تعديل كميات)
-- حذف فاتورة مع استعادة المخزون
-
-**الديون:**
-- عرض الديون مجمّعة حسب المورد أو العميل
-- تفاصيل الديون لكل مورد/عميل
-- تسجيل دفعات جزئية أو كاملة
-
-**التقارير والإحصاءات:**
-- لوحة تحكم رئيسية: مبيعات اليوم، عدد المنتجات، المنتجات منخفضة المخزون، المنتجات القريبة من الانتهاء، الديون
-- رسم بياني لآخر 6 أشهر (مبيعات + مشتريات)
-- إحصاءات يومية: مبيعات ساعة بساعة + أكثر 5 منتجات مبيعاً
-- إحصاءات شهرية: مبيعات يوم بيوم + أكثر 5 منتجات + مقارنة بالشهر السابق
-
-**إدارة المستخدمين:**
-- عرض قائمة المستخدمين مع أدوارهم
-- إنشاء حسابات كاشير
-- تعديل الاسم والدور
-- حذف المستخدمين (Admin محمي من الحذف)
-
-**التسعير:**
-- حساب سعر البيع تلقائياً: `roundUp(unitPrice × (1 + profit/100))` مرفوع دائماً لأعلى 100
-- دعم السعر اليدوي للمنتج (`IsManualPrice = true`)
-- صفحة مركزية لتعديل أسعار البيع
-- إعدادات نسبة الربح والضريبة (جدول `PricingSetting` — صف واحد)
-
-**التصنيفات:**
-- إضافة وعرض تصنيفات المنتجات
-
-### ⚠️ ميزات ناقصة أو نصف منفذة
-
-1. **`EmailSender`:** Stub فارغ — لا يُرسل بريداً حقيقياً (مطلوب من Identity).
-2. **`Home/System`:** صفحة الإعدادات تُرجع View فارغة تقريباً (لا يوجد محتوى فعلي).
-3. **ملف الشخصي:** رابط "ملفي الشخصي" في القائمة الجانبية يشير إلى `#` (غير منفذ).
-4. **`DbInitializer`:** موجود لكن غير مستدعى — لا يوجد Seed تلقائي للمدير.
-5. **`DebtPayments` Table:** موجود في DbContext والـ Model لكن **لا يوجد Controller أو منطق** يضيف/يقرأ منه — `DebtsController.Pay` يُحدّث `AmountPaid` مباشرة على الفاتورة بدون تسجيل في `DebtPayments`.
-6. **`Supplier` Model:** موجود مع جدول في DB، لكن لا يوجد Controller لإدارة الموردين. `SupplierName` يُحفظ كنص في `Purchase`.
-7. **`SupplierId` في Purchase:** موجود في الـ Model لكن لا يُملأ من نموذج الإنشاء.
-8. **تعديل `TaxPercentage` في PricingSettings:** `PricingSettingsController.Update` يُحدّث `ProfitPercentage` فقط، لا `TaxPercentage`.
-9. **`PurchasesController` بدون `[Authorize]`:** قد يسمح للزوار غير المسجلين بالوصول.
-
----
-
-## 9. نقاط يجب الانتباه لها
-
-### ⚠️ Gotchas وقرارات غير بديهية
-
-**1. `PurchasePrice` في `PurchaseItem` هو إجمالي السعر، ليس سعر الوحدة**
-```csharp
-// في PurchaseItem:
-public decimal PurchasePrice { get; set; }  // إجمالي هذا الصنف
-public decimal UnitPurchasePrice => Quantity == 0 ? 0 : PurchasePrice / Quantity; // سعر الوحدة محسوب
-```
-عند تحديث سعر البيع للمنتج في `InventoryService`:
-```csharp
-var unitPrice = item.PurchasePrice / item.Quantity; // سعر الوحدة
-product.SalePrice = PricingHelper.CalculateSalePrice(unitPrice, profitPercentage);
-```
-
-**2. حساب سعر البيع: يُرفع دائماً للـ 100 التالية**
-```csharp
-return (Math.Floor(priceWithProfit / 100) + 1) * 100;
-```
-مثال: سعر شراء الوحدة 150، ربح 20% → 180 → يُقرَّب إلى **200** وليس 180.
-
-**3. الفاتورة المعلّقة (Suspended) لا تخصم من المخزون**
-```
-IsSuspended = true + PaymentStatus = Suspended
-InvoiceNumber = "H{N:D6}" (prefix H)
-```
-عند تحويلها لفاتورة عادية (Edit) تُولَّد رقم فاتورة جديد `"S{N:D6}"`.
-
-**4. توليد رقم الفاتورة يتم في الذاكرة، غير Thread-Safe**
-```csharp
-// في SalesController:
-private string GenerateInvoiceNumber(string prefix) { ... }
-// يعتمد على Max(Id) — قد يتكرر في بيئة Concurrent
-```
-
-**5. Edit لفاتورة الشراء المدفوعة ممنوع**
-```csharp
-if (purchase.PaymentStatus == PaymentStatus.Paid) {
-    ModelState.AddModelError("", "لا يمكن تعديل فاتورة مدفوعة");
-    return View(vm);
-}
-```
-
-**6. Delete فاتورة البيع يُعيد المخزون حتى للفواتير المعلّقة**
-في `SalesController.Delete` يتم إعادة الكمية لكل Item — بما فيها المعلقة التي لم تُخصم أصلاً. قد يُسبب تضخماً في المخزون.
-
-**7. `PurchaseVM` يحتوي حسابات `computed`، لكن القيم تُحفظ من الـ View**
-```csharp
-// PurchaseVM الـ properties computed:
-public decimal Subtotal => Items.Sum(i => i.TotalPrice);
-// لكن في Create POST:
-purchase.Subtotal = vm.Subtotal; // يقرأ القيمة المحسوبة من الـ VM
-```
-الخطر: لو الـ View أرسلت قيمة مختلفة يمكن التلاعب بها.
-
-**8. `appsettings.json` تحتوي اسم السيرفر الحقيقي**
-```
-Server=LAPAZM\SQLEXPRESS01
-```
-يجب تغييره عند النشر أو في بيئة مختلفة.
-
-**9. Culture مُحددة في نهاية Program.cs (بعد `app.Build`)**
-```csharp
-var cultureInfo = new CultureInfo("en-US");
-CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
-```
-هذا يضمن parsing الأرقام بالنقطة وليس الفاصلة.
-
-### 🔴 ديون تقنية معروفة
-
-1. **لا يوجد Transaction Scope** — عمليات الـ Save تتم في خطوات منفصلة في PurchasesController (SaveChanges مرتين).
-2. **بعض الـ Controllers لا تُعيد ProductName عند الخطأ في Edit** — قد تفقد بيانات العرض.
-3. **لا يوجد Unit Tests** أو Integration Tests.
-4. **`TotalPrice` في `PurchaseItemVM`** مُعرَّفة كـ `=> PurchasePrice` بدون حساب (مضلّلة).
-5. **`User.cs`** موجود في Models لكنه لا يُستخدم في أي مكان (أثر قديم).
-6. **PurchasesController** بدون `[Authorize]` attribute.
-
----
-
-## 10. خارطة سريعة للمطور / الذكاء الاصطناعي
-
-### إذا أردت إضافة ميزة جديدة
-
-| الميزة | من أين تبدأ |
-|--------|------------|
-| إضافة حقل جديد للمنتج | `Models/Product.cs` → ViewModel → Migration → View |
-| إضافة تقرير جديد | `Controllers/DashboardController.cs` → `ViewModels/` → `Views/Dashboard/` |
-| إضافة endpoint جديد | `Controllers/[اسم].cs` → View في `Views/[اسم]/` |
-| تغيير منطق حساب السعر | `Helpers/PricingHelper.cs` |
-| تغيير منطق المخزون | `Services/InventoryService.cs` |
-| إضافة دور جديد | `Program.cs` (مصفوفة roles) + Controller attributes |
-| تغيير layout أو القائمة الجانبية | `Views/Shared/_Layout.cshtml` |
-
-### إذا أردت تعديل صفحة أو ميزة محددة
-
-| الصفحة | Controller | View | ViewModel |
-|--------|-----------|------|-----------|
-| إنشاء فاتورة بيع | `SalesController.Create` | `Views/Sales/Create.cshtml` | `SaleVM` + `SaleItemVM` |
-| قائمة المبيعات | `SalesController.Index` | `Views/Sales/Index.cshtml` | `List<Sale>` |
-| إنشاء فاتورة شراء | `PurchasesController.Create` | `Views/Purchases/Create.cshtml` | `PurchaseVM` + `PurchaseItemVM` |
-| لوحة التحكم الرئيسية | `HomeController.Index` | `Views/Home/Index.cshtml` | `DashboardVM` |
-| التقارير | `DashboardController` | `Views/Dashboard/` | `DashboardVM`, `TodayStatsVM`, `MonthlyStatsVM` |
-| الديون | `DebtsController` | `Views/Debts/` | `DebtSummaryVM`, `DebtDetailsVM`, `DebtVM` |
-| إدارة المنتجات | `ProductsController` | `Views/Products/` | `ProductVM` |
-| إدارة المستخدمين | `UsersController` | `Views/Users/` | `UserWithRoleVM`, `CreateCashierVM` |
-| إعدادات التسعير | `PricingSettingsController` | `Views/PricingSettings/` | `PricingSetting` مباشرة |
-
-### تدفق إضافة منتج جديد
-1. المطور يذهب لـ `/Purchases/Create`
-2. يختار "منتج جديد" بدل البحث عن موجود
-3. يملأ الاسم والكمية والسعر
-4. عند الحفظ: `PurchasesController.Create` ينشئ `Product` جديد → يحفظ → ثم `InventoryService.ApplyPurchaseAsync()` يُحدّث الكمية ويحسب سعر البيع
-
-### تدفق عملية البيع
-1. الكاشير يذهب لـ `/Sales/Create`
-2. يبحث عن المنتج بالاسم أو الباركود (AJAX → `/Sales/SearchProducts`)
-3. يضيف الكميات
-4. يختار حالة الدفع (نقدي/آجل/معلّق)
-5. عند الحفظ: يُحتسب `Subtotal + TaxAmount - Discount = Total`
-6. ثم `InventoryService.ApplySaleAsync()` يخصم الكميات ويسجل حركة المخزون
-
----
-
-## ملاحظات على التناقضات الموجودة في الكود
-
-1. **`DashboardController` يستخدم `[Authorize]` عام** بينما `DashboardController.Today` و `Monthly` ليس عليهم attribute خاص — يرثان من Class-level `[Authorize]`.
-
-2. **`HomeController.Index`** يحسب `LowStockCount` بـ `Quantity < 50` بينما **`DashboardController.Index`** يستخدم `Quantity <= 5` — تناقض في تعريف "منخفض المخزون".
-
-3. **`DbInitializer`** غير مستدعى من `Program.cs` — يوجد كود مكرر في `Program.cs` لإنشاء الأدوار.
-
-4. **`DebtPayments` Table** موجودة في قاعدة البيانات وفي DbContext لكن لا يُكتب فيها — `DebtsController.Pay` يُحدّث الفاتورة مباشرة.
-
-5. **`PurchasesController.Edit`** عند التعديل يُضيف كميات للمخزون مباشرة بدون التحقق من الكميات القديمة (لا يُزيل الكميات القديمة أولاً).
-
----
-
-*آخر تحديث لهذا الملف: بناءً على قراءة الكود الفعلي — أغسطس 2026*
+*تاريخ التحديث الأخير لهذا الملف: سبتمبر 2026 — متوافق كلياً مع الإصدارين V2.0 و V2.1 والكود المصدري الفعلي للمشروع.*
