@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  sitemap.xml — النخيل Smart POS
+  تاريخ الإنشاء: 2026-10-29
+  يغطّي هذا الملف جميع صفحات النظام القابلة للفهرسة.
+  ملاحظة: الصفحات التي تتطلب مصادقة (Login) لا تُدرج عادةً في الـ sitemap العام،
+  لكنها مُدرجة هنا كمرجع داخلي شامل للمشروع.
+  إذا كان الموقع عاماً، احذف الصفحات المحمية (Authorized) واحتفظ فقط بصفحة Login.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+                            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <!-- ============================================================ -->
+  <!--  Home / الصفحة الرئيسية                                      -->
+  <!-- ============================================================ -->
+
+  <!-- الصفحة الرئيسية — لوحة مؤشرات سريعة -->
+  <url>
+    <loc>https://alnkhil.runasp.net/</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- بوابة الإدارة المركزية -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Home/System</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- صفحة الخصوصية -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Home/Privacy</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- ============================================================ -->
+  <!--  Identity / المصادقة وإدارة الحسابات                         -->
+  <!-- ============================================================ -->
+
+  <!-- تسجيل الدخول -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Identity/Account/Login</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- تسجيل الخروج -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Identity/Account/Logout</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+
+  <!-- نسيت كلمة المرور -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Identity/Account/ForgotPassword</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <!-- تأكيد إرسال رسالة استعادة كلمة المرور -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Identity/Account/ForgotPasswordConfirmation</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+
+  <!-- إعادة تعيين كلمة المرور -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Identity/Account/ResetPassword</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <!-- تأكيد إعادة تعيين كلمة المرور -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Identity/Account/ResetPasswordConfirmation</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+
+  <!-- حساب مقفل -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Identity/Account/Lockout</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.1</priority>
+  </url>
+
+  <!-- رفض الوصول -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Identity/Account/AccessDenied</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.1</priority>
+  </url>
+
+  <!-- ============================================================ -->
+  <!--  Dashboard / لوحة التحليلات والتقارير  [Authorize]           -->
+  <!-- ============================================================ -->
+
+  <!-- لوحة المؤشرات الشاملة -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Dashboard</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- حركة مبيعات اليوم الساعية -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Dashboard/Today</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- مبيعات ومشتريات الشهر المختار -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Dashboard/Monthly</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ============================================================ -->
+  <!--  Sales / فواتير البيع ونقطة البيع  [Admin, Cashier]          -->
+  <!-- ============================================================ -->
+
+  <!-- قائمة جميع فواتير البيع -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Sales</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- شاشة نقطة البيع — إنشاء فاتورة جديدة -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Sales/Create</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- ============================================================ -->
+  <!--  Purchases / فواتير الشراء  [Admin, Cashier]                 -->
+  <!-- ============================================================ -->
+
+  <!-- قائمة فواتير الشراء -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Purchases</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- إنشاء فاتورة شراء جديدة -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Purchases/Create</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- ============================================================ -->
+  <!--  Debts / إدارة الديون والسداد  [Admin, Cashier]              -->
+  <!-- ============================================================ -->
+
+  <!-- ملخص ديون الموردين والعملاء -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Debts</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ============================================================ -->
+  <!--  Products / إدارة المنتجات  [Admin]                          -->
+  <!-- ============================================================ -->
+
+  <!-- قائمة المنتجات -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Products</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- ============================================================ -->
+  <!--  Categories / التصنيفات  [Admin]                              -->
+  <!-- ============================================================ -->
+
+  <!-- قائمة التصنيفات -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Categories</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- إنشاء تصنيف جديد -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Categories/Create</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- ============================================================ -->
+  <!--  Suppliers / إدارة الموردين  [Admin] — جديد V2.0             -->
+  <!-- ============================================================ -->
+
+  <!-- قائمة الموردين -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Suppliers</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- إضافة مورد جديد -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Suppliers/Create</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- ============================================================ -->
+  <!--  Users / إدارة المستخدمين والكاشيرين  [Admin]                -->
+  <!-- ============================================================ -->
+
+  <!-- قائمة المستخدمين -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Users</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- إنشاء حساب كاشير جديد -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Users/Create</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- ============================================================ -->
+  <!--  Inventory / سجل حركات المخزون  [Admin]                      -->
+  <!-- ============================================================ -->
+
+  <!-- سجل الحركات التاريخية -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Inventory</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- ============================================================ -->
+  <!--  Pricing / مراقبة الأسعار وهوامش الربح  [Admin]              -->
+  <!-- ============================================================ -->
+
+  <!-- جدول الأسعار والهوامش -->
+  <url>
+    <loc>https://alnkhil.runasp.net/Pricing</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- ============================================================ -->
+  <!--  PricingSettings / إعدادات الربح والضريبة  [Admin]           -->
+  <!-- ============================================================ -->
+
+  <!-- إعدادات نسبة الربح والضريبة -->
+  <url>
+    <loc>https://alnkhil.runasp.net/PricingSettings</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+</urlset>
